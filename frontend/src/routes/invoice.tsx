@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X } from "lucide-react";
+import { Trash2, Edit, Plus, X, ReceiptText, CalendarIcon } from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteInvoice,
@@ -37,9 +37,10 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { Calendar } from "~/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "~/lib/utils";
+import TableSkeleton from "~/components/TableSkeleton";
+import { Skeleton } from "~/components/ui/skeleton";
 
 export const Route = createFileRoute("/invoice")({
   component: InvoiceManagement,
@@ -247,10 +248,18 @@ export default function InvoiceManagement() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading invoices...</div>
+      <div className="w-full">
+        <Header breadcrumbs={[{ name: "Invoices", url: "/invoice" }]} />
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-8 w-56 mb-2" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <Skeleton className="h-10 w-40" />
+          </div>
         </div>
+        <TableSkeleton />
       </div>
     );
   }
@@ -272,13 +281,19 @@ export default function InvoiceManagement() {
       <Header breadcrumbs={[{ name: "Invoices", url: "/invoice" }]} />
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Invoice Management
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Manage billing invoices for dormitory services
-            </p>
+          <div className="flex items-center gap-3">
+            <ReceiptText
+              className="text-pink-600 bg-pink-100 rounded-lg p-1"
+              size={36}
+            />
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Invoice Management
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Manage billing and invoices for dormitory services
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Dialog

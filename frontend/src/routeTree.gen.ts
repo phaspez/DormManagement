@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudentRouteImport } from './routes/student'
+import { Route as ServiceusageRouteImport } from './routes/serviceusage'
+import { Route as ServiceRouteImport } from './routes/service'
 import { Route as RoomtypeRouteImport } from './routes/roomtype'
 import { Route as RoomRouteImport } from './routes/room'
 import { Route as InvoiceRouteImport } from './routes/invoice'
@@ -19,6 +21,16 @@ import { Route as IndexRouteImport } from './routes/index'
 const StudentRoute = StudentRouteImport.update({
   id: '/student',
   path: '/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServiceusageRoute = ServiceusageRouteImport.update({
+  id: '/serviceusage',
+  path: '/serviceusage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServiceRoute = ServiceRouteImport.update({
+  id: '/service',
+  path: '/service',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoomtypeRoute = RoomtypeRouteImport.update({
@@ -53,6 +65,8 @@ export interface FileRoutesByFullPath {
   '/invoice': typeof InvoiceRoute
   '/room': typeof RoomRoute
   '/roomtype': typeof RoomtypeRoute
+  '/service': typeof ServiceRoute
+  '/serviceusage': typeof ServiceusageRoute
   '/student': typeof StudentRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +75,8 @@ export interface FileRoutesByTo {
   '/invoice': typeof InvoiceRoute
   '/room': typeof RoomRoute
   '/roomtype': typeof RoomtypeRoute
+  '/service': typeof ServiceRoute
+  '/serviceusage': typeof ServiceusageRoute
   '/student': typeof StudentRoute
 }
 export interface FileRoutesById {
@@ -70,13 +86,31 @@ export interface FileRoutesById {
   '/invoice': typeof InvoiceRoute
   '/room': typeof RoomRoute
   '/roomtype': typeof RoomtypeRoute
+  '/service': typeof ServiceRoute
+  '/serviceusage': typeof ServiceusageRoute
   '/student': typeof StudentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contract' | '/invoice' | '/room' | '/roomtype' | '/student'
+  fullPaths:
+    | '/'
+    | '/contract'
+    | '/invoice'
+    | '/room'
+    | '/roomtype'
+    | '/service'
+    | '/serviceusage'
+    | '/student'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contract' | '/invoice' | '/room' | '/roomtype' | '/student'
+  to:
+    | '/'
+    | '/contract'
+    | '/invoice'
+    | '/room'
+    | '/roomtype'
+    | '/service'
+    | '/serviceusage'
+    | '/student'
   id:
     | '__root__'
     | '/'
@@ -84,6 +118,8 @@ export interface FileRouteTypes {
     | '/invoice'
     | '/room'
     | '/roomtype'
+    | '/service'
+    | '/serviceusage'
     | '/student'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +129,8 @@ export interface RootRouteChildren {
   InvoiceRoute: typeof InvoiceRoute
   RoomRoute: typeof RoomRoute
   RoomtypeRoute: typeof RoomtypeRoute
+  ServiceRoute: typeof ServiceRoute
+  ServiceusageRoute: typeof ServiceusageRoute
   StudentRoute: typeof StudentRoute
 }
 
@@ -103,6 +141,20 @@ declare module '@tanstack/react-router' {
       path: '/student'
       fullPath: '/student'
       preLoaderRoute: typeof StudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/serviceusage': {
+      id: '/serviceusage'
+      path: '/serviceusage'
+      fullPath: '/serviceusage'
+      preLoaderRoute: typeof ServiceusageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/service': {
+      id: '/service'
+      path: '/service'
+      fullPath: '/service'
+      preLoaderRoute: typeof ServiceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roomtype': {
@@ -149,6 +201,8 @@ const rootRouteChildren: RootRouteChildren = {
   InvoiceRoute: InvoiceRoute,
   RoomRoute: RoomRoute,
   RoomtypeRoute: RoomtypeRoute,
+  ServiceRoute: ServiceRoute,
+  ServiceusageRoute: ServiceusageRoute,
   StudentRoute: StudentRoute,
 }
 export const routeTree = rootRouteImport

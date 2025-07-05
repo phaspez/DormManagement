@@ -1,24 +1,25 @@
 import {
   Command,
-  Frame,
-  Map,
-  PieChart,
-    House,
-    Hotel,
-    ReceiptText,
-  User
-} from "lucide-react"
+  House,
+  Hotel,
+  ReceiptText,
+  User,
+  Notebook,
+  Bath,
+  CircleGauge,
+} from "lucide-react";
 
-import { NavMain } from "~/components/nav-main"
-import { NavUser } from "~/components/nav-user"
-import { TeamSwitcher } from "~/components/team-switcher"
+import { NavMain } from "~/components/nav-main";
+import { NavUser } from "~/components/nav-user";
+import { TeamSwitcher } from "~/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader, SidebarMenuItem,
+  SidebarHeader,
+  SidebarMenuItem,
   SidebarRail,
-} from "~/components/ui/sidebar"
+} from "~/components/ui/sidebar";
 
 // This is sample data.
 const data = {
@@ -50,7 +51,7 @@ const data = {
     {
       title: "Contracts",
       url: "/contract",
-      icon: ReceiptText,
+      icon: Notebook,
       isActive: true,
     },
     {
@@ -65,8 +66,14 @@ const data = {
       icon: ReceiptText,
       isActive: true,
     },
+    {
+      title: "Service Usages",
+      url: "/serviceusage",
+      icon: Bath,
+      isActive: true,
+    },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -82,5 +89,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

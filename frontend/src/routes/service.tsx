@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  deleteService,
+  getServices,
+  postService,
+  putService,
+  Service,
+} from "~/fetch/service";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Separator } from "~/components/ui/separator";
 import {
@@ -29,70 +29,61 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, User } from "lucide-react";
+import { Trash2, Edit, Plus, X, Bath } from "lucide-react";
 import Header from "~/components/header";
-import {
-  deleteStudent,
-  getStudents,
-  postStudent,
-  putStudent,
-  Students,
-} from "~/fetch/student";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
 
-export const Route = createFileRoute("/student")({
-  component: StudentManagement,
+export const Route = createFileRoute("/service")({
+  component: ServiceManagement,
 });
 
 interface FormErrors {
-  FullName?: string;
-  Gender?: string;
-  PhoneNumber?: string;
+  ServiceName?: string;
+  UnitPrice?: string;
 }
 
-export default function StudentManagement() {
+export default function ServiceManagement() {
   const queryClient = useQueryClient();
 
-  // Fetch students
+  // Fetch services
   const {
-    data: students,
+    data: services,
     isLoading,
     isError,
   } = useQuery({
-    queryFn: getStudents,
-    queryKey: ["students"],
+    queryFn: getServices,
+    queryKey: ["services"],
   });
 
   // Mutations
-  const createStudentMutation = useMutation({
-    mutationFn: postStudent,
+  const createServiceMutation = useMutation({
+    mutationFn: postService,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["services"] });
       resetForm();
     },
   });
 
-  const updateStudentMutation = useMutation({
-    mutationFn: putStudent,
+  const updateServiceMutation = useMutation({
+    mutationFn: putService,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["services"] });
       resetForm();
     },
   });
 
-  const deleteStudentMutation = useMutation({
-    mutationFn: deleteStudent,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["students"] }),
+  const deleteServiceMutation = useMutation({
+    mutationFn: deleteService,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
   });
 
   // State for form inputs
-  const [formData, setFormData] = useState<Omit<Students, "StudentID">>({
-    FullName: "",
-    Gender: "",
-    PhoneNumber: "",
+  const [formData, setFormData] = useState<Omit<Service, "ServiceID">>({
+    ServiceName: "",
+    UnitPrice: 0,
   });
-  const [editingStudent, setEditingStudent] = useState<Students | null>(null);
+  const [editingService, setEditingService] = useState<Service | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -100,20 +91,14 @@ export default function StudentManagement() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.FullName.trim()) {
-      newErrors.FullName = "Full name is required";
-    } else if (formData.FullName.length < 3) {
-      newErrors.FullName = "Full name must be at least 3 characters";
+    if (!formData.ServiceName.trim()) {
+      newErrors.ServiceName = "Service name is required";
+    } else if (formData.ServiceName.length < 2) {
+      newErrors.ServiceName = "Service name must be at least 2 characters";
     }
 
-    if (!formData.Gender.trim()) {
-      newErrors.Gender = "Gender is required";
-    }
-
-    if (!formData.PhoneNumber.trim()) {
-      newErrors.PhoneNumber = "Phone number is required";
-    } else if (!/^\d{10,12}$/.test(formData.PhoneNumber)) {
-      newErrors.PhoneNumber = "Phone number must be between 10-12 digits";
+    if (formData.UnitPrice <= 0) {
+      newErrors.UnitPrice = "Unit price must be greater than 0";
     }
 
     setErrors(newErrors);
@@ -121,7 +106,7 @@ export default function StudentManagement() {
   };
 
   // Handlers
-  const handleInputChange = (name: string, value: string) => {
+  const handleInputChange = (name: string, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -137,45 +122,47 @@ export default function StudentManagement() {
   };
 
   const resetForm = () => {
-    setFormData({ FullName: "", Gender: "", PhoneNumber: "" });
-    setEditingStudent(null);
+    setFormData({
+      ServiceName: "",
+      UnitPrice: 0,
+    });
+    setEditingService(null);
     setErrors({});
     setIsCreateDialogOpen(false);
   };
 
-  const handleCreateStudent = () => {
+  const handleCreateService = () => {
     if (!validateForm()) return;
-    createStudentMutation.mutate(formData);
+    createServiceMutation.mutate(formData);
   };
 
-  const handleEditStudent = (student: Students) => {
-    setEditingStudent(student);
+  const handleEditService = (service: Service) => {
+    setEditingService(service);
     setFormData({
-      FullName: student.FullName,
-      Gender: student.Gender,
-      PhoneNumber: student.PhoneNumber,
+      ServiceName: service.ServiceName,
+      UnitPrice: service.UnitPrice,
     });
     setErrors({});
     setIsCreateDialogOpen(true);
   };
 
-  const handleUpdateStudent = () => {
+  const handleUpdateService = () => {
     if (!validateForm()) return;
-    if (editingStudent) {
-      updateStudentMutation.mutate({ ...editingStudent, ...formData });
+    if (editingService) {
+      updateServiceMutation.mutate({ ...editingService, ...formData });
     }
   };
 
-  const handleDeleteStudent = (studentID: number) => {
-    if (window.confirm("Are you sure you want to delete this student?")) {
-      deleteStudentMutation.mutate(studentID);
+  const handleDeleteService = (serviceID: number) => {
+    if (window.confirm("Are you sure you want to delete this service?")) {
+      deleteServiceMutation.mutate(serviceID);
     }
   };
 
   if (isLoading) {
     return (
       <div className="w-full">
-        <Header breadcrumbs={[{ name: "Invoices", url: "/invoice" }]} />
+        <Header breadcrumbs={[{ name: "Services", url: "/service" }]} />
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -195,7 +182,7 @@ export default function StudentManagement() {
       <div className="container mx-auto p-4">
         <Alert className="max-w-md mx-auto">
           <AlertDescription>
-            Error loading students. Please try again later.
+            Error loading services. Please try again later.
           </AlertDescription>
         </Alert>
       </div>
@@ -204,20 +191,20 @@ export default function StudentManagement() {
 
   return (
     <div className="w-full">
-      <Header breadcrumbs={[{ name: "Students", url: "/student" }]} />
+      <Header breadcrumbs={[{ name: "Services", url: "/service" }]} />
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <User
-              className="text-green-600 bg-green-100 rounded-lg p-1"
+            <Bath
+              className="text-cyan-600 bg-cyan-100 rounded-lg p-1"
               size={36}
             />
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
-                Student Management
+                Service Management
               </h1>
               <p className="text-muted-foreground mt-2">
-                Manage student records, assignments, and information
+                Manage dormitory services and their details
               </p>
             </div>
           </div>
@@ -230,107 +217,81 @@ export default function StudentManagement() {
                 <Button
                   className="flex items-center gap-2"
                   onClick={() => {
-                    setEditingStudent(null);
-                    setFormData({ FullName: "", Gender: "", PhoneNumber: "" });
+                    setEditingService(null);
+                    setFormData({ ServiceName: "", UnitPrice: 0 });
                     setErrors({});
                   }}
                 >
                   <Plus className="h-4 w-4" />
-                  Add New Student
+                  Create Service
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    {editingStudent ? (
+                    {editingService ? (
                       <Edit className="h-5 w-5" />
                     ) : (
                       <Plus className="h-5 w-5" />
                     )}
-                    {editingStudent ? "Edit Student" : "Add New Student"}
+                    {editingService ? "Edit Service" : "Create New Service"}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="serviceName">Service Name</Label>
                     <Input
-                      id="fullName"
+                      id="serviceName"
                       type="text"
-                      placeholder="Enter full name"
-                      value={formData.FullName}
+                      placeholder="Enter service name"
+                      value={formData.ServiceName}
                       onChange={(e) =>
-                        handleInputChange("FullName", e.target.value)
+                        handleInputChange("ServiceName", e.target.value)
                       }
-                      className={errors.FullName ? "border-destructive" : ""}
+                      className={errors.ServiceName ? "border-destructive" : ""}
                     />
-                    {errors.FullName && (
+                    {errors.ServiceName && (
                       <p className="text-sm text-destructive">
-                        {errors.FullName}
+                        {errors.ServiceName}
                       </p>
                     )}
                   </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select
-                      value={formData.Gender}
-                      onValueChange={(value) =>
-                        handleInputChange("Gender", value)
-                      }
-                    >
-                      <SelectTrigger
-                        className={errors.Gender ? "border-destructive" : ""}
-                      >
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.Gender && (
-                      <p className="text-sm text-destructive">
-                        {errors.Gender}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Label htmlFor="unitPrice">Unit Price</Label>
                     <Input
-                      id="phoneNumber"
-                      type="text"
-                      placeholder="Enter phone number"
-                      value={formData.PhoneNumber}
+                      id="unitPrice"
+                      type="number"
+                      placeholder="Enter unit price"
+                      value={formData.UnitPrice || ""}
                       onChange={(e) =>
-                        handleInputChange("PhoneNumber", e.target.value)
+                        handleInputChange(
+                          "UnitPrice",
+                          parseFloat(e.target.value) || 0,
+                        )
                       }
-                      className={errors.PhoneNumber ? "border-destructive" : ""}
+                      className={errors.UnitPrice ? "border-destructive" : ""}
                     />
-                    {errors.PhoneNumber && (
+                    {errors.UnitPrice && (
                       <p className="text-sm text-destructive">
-                        {errors.PhoneNumber}
+                        {errors.UnitPrice}
                       </p>
                     )}
                   </div>
-
                   <Separator />
-
                   <div className="flex gap-2">
                     <Button
                       onClick={
-                        editingStudent
-                          ? handleUpdateStudent
-                          : handleCreateStudent
+                        editingService
+                          ? handleUpdateService
+                          : handleCreateService
                       }
                       disabled={
-                        createStudentMutation.isPending ||
-                        updateStudentMutation.isPending
+                        createServiceMutation.isPending ||
+                        updateServiceMutation.isPending
                       }
                       className="flex-1"
                     >
-                      {editingStudent ? "Update Student" : "Add Student"}
+                      {editingService ? "Update Service" : "Create Service"}
                     </Button>
                     <Button
                       variant="outline"
@@ -348,41 +309,39 @@ export default function StudentManagement() {
         </div>
       </div>
 
-      {/* Student List */}
+      {/* Service List */}
       <Card>
         <CardHeader>
-          <CardTitle>Students ({students?.length || 0})</CardTitle>
+          <CardTitle>Services ({services?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          {students?.length === 0 ? (
+          {services?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No students found. Add your first student to get started.
+              No services found. Create your first service to get started.
             </div>
           ) : (
             <div className="border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Full Name</TableHead>
-                    <TableHead>Gender</TableHead>
-                    <TableHead>Phone Number</TableHead>
+                    <TableHead>Service Name</TableHead>
+                    <TableHead>Unit Price</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {students?.map((student) => (
-                    <TableRow key={student.StudentID}>
+                  {services?.map((service) => (
+                    <TableRow key={service.ServiceID}>
                       <TableCell className="font-medium">
-                        {student.FullName}
+                        {service.ServiceName}
                       </TableCell>
-                      <TableCell>{student.Gender}</TableCell>
-                      <TableCell>{student.PhoneNumber}</TableCell>
+                      <TableCell>${service.UnitPrice.toFixed(2)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleEditStudent(student)}
+                            onClick={() => handleEditService(service)}
                             className="flex items-center gap-1"
                           >
                             <Edit className="h-3 w-3" />
@@ -392,9 +351,9 @@ export default function StudentManagement() {
                             variant="destructive"
                             size="sm"
                             onClick={() =>
-                              handleDeleteStudent(student.StudentID)
+                              handleDeleteService(service.ServiceID)
                             }
-                            disabled={deleteStudentMutation.isPending}
+                            disabled={deleteServiceMutation.isPending}
                             className="flex items-center gap-1"
                           >
                             <Trash2 className="h-3 w-3" />
