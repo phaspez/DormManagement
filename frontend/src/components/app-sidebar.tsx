@@ -1,0 +1,86 @@
+import {
+  Command,
+  Frame,
+  Map,
+  PieChart,
+    House,
+    Hotel,
+    ReceiptText,
+  User
+} from "lucide-react"
+
+import { NavMain } from "~/components/nav-main"
+import { NavUser } from "~/components/nav-user"
+import { TeamSwitcher } from "~/components/team-switcher"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader, SidebarMenuItem,
+  SidebarRail,
+} from "~/components/ui/sidebar"
+
+// This is sample data.
+const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  teams: [
+    {
+      name: "Dorm. Management",
+      logo: Command,
+      plan: "Project Quản trị dữ liệu",
+    },
+  ],
+  navMain: [
+    {
+      title: "Home",
+      url: "/",
+      icon: House,
+      isActive: true,
+    },
+    {
+      title: "Rooms",
+      url: "/room",
+      icon: Hotel,
+      isActive: true,
+    },
+    {
+      title: "Contracts",
+      url: "/contract",
+      icon: ReceiptText,
+      isActive: true,
+    },
+    {
+      title: "Students",
+      url: "/student",
+      icon: User,
+      isActive: true,
+    },
+    {
+      title: "Invoices",
+      url: "/invoice",
+      icon: ReceiptText,
+      isActive: true,
+    },
+  ],
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <TeamSwitcher teams={data.teams} />
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+      </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={data.user} />
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  )
+}

@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router"
 import { Button } from "~/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
 import {getRooms} from "~/fetch/room";
+import Header from "~/components/header";
+import React from "react";
 export const Route = createFileRoute("/")({
 	component: Home,
 })
@@ -17,7 +19,10 @@ function Home() {
 	}
 
 	return (
-		<div className="p-2">
+		<div className="w-full">
+			<Header breadcrumbs={[
+				{"name": "Home", "url": "/"}
+			]}/>
 			<h1>Dorm management</h1>
 			<Button>Click me</Button>
 			<div>{

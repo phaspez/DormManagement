@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import {Trash2, Edit, Plus, X, MonitorCog} from "lucide-react"
 import RoomTypeManagement from "~/routes/roomtype";
 import {getRoomTypes, RoomType} from "~/fetch/roomType";
+import Header from "~/components/header";
 
 export const Route = createFileRoute("/room")({
     component: RoomManagement,
@@ -183,7 +184,10 @@ export default function RoomManagement() {
     }
 
     return (
-        <div className="w-full p-6">
+        <div className="w-full">
+            <Header breadcrumbs={[
+                {"name": "Rooms", "url": "/room"}
+            ]}/>
             <div className="mb-6">
                 <div className="flex items-center justify-between">
                     <div>
@@ -317,7 +321,7 @@ export default function RoomManagement() {
                             <DialogTrigger asChild>
                                 <Button className="flex items-center gap-2">
                                     <MonitorCog className="h-4 w-4" />
-                                    Open Room Type Management
+                                    Edit Room Type...
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-2xl max-w-full">

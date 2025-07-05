@@ -15,6 +15,16 @@ import { NotFound } from "~/components/NotFound"
 import appCss from "~/styles/app.css?url"
 import { seo } from "~/utils/seo"
 import Header from "~/components/header"
+import {SidebarInset, SidebarProvider, SidebarTrigger} from "~/components/ui/sidebar";
+import {AppSidebar} from "~/components/app-sidebar";
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList, BreadcrumbPage,
+	BreadcrumbSeparator
+} from "~/components/ui/breadcrumb";
+import {Separator} from "~/components/ui/separator";
 
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient
@@ -83,18 +93,20 @@ function RootComponent() {
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
 		<html>
-			<head>
-				<HeadContent />
-			</head>
-			<body>
-				<Header />
-				<main className="prose">
-				<div className="w-screen px-4 lg:px-12 xl:px-24 py-4">{children}</div>
-				</main>
-				<TanStackRouterDevtools position="bottom-right" />
-				<ReactQueryDevtools buttonPosition="bottom-left" />
-				<Scripts />
-			</body>
+		<head>
+			<HeadContent />
+		</head>
+		<body>
+		<SidebarProvider>
+			<AppSidebar/>
+			<SidebarInset>
+				<div className="w-full px-12 py-4">{children}</div>
+			</SidebarInset>
+		</SidebarProvider>
+		<TanStackRouterDevtools position="bottom-right"/>
+		<ReactQueryDevtools buttonPosition="bottom-left"/>
+		<Scripts/>
+		</body>
 		</html>
 	)
 }
