@@ -190,8 +190,7 @@ export default function ServiceManagement() {
   }
 
   return (
-    <div className="w-full">
-      <Header breadcrumbs={[{ name: "Services", url: "/service" }]} />
+    <div className="w-full p-6">
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
