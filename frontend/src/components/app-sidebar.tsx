@@ -69,7 +69,7 @@ const data = {
     {
       title: "Service Usages",
       url: "/serviceusage",
-      icon: Bath,
+      icon: CircleGauge,
       isActive: true,
     },
   ],

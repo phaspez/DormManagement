@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteContract,
@@ -8,7 +8,8 @@ import {
   Contract,
 } from "~/fetch/contract";
 import { getRooms, Room } from "~/fetch/room";
-import { createFileRoute } from "@tanstack/react-router";
+import { getStudentByID, Students } from "~/fetch/student";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -51,6 +52,7 @@ import {
   Notebook,
   FileText,
   CalendarIcon,
+  Info,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "~/lib/utils";
@@ -58,7 +60,7 @@ import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
 
-export const Route = createFileRoute("/contract")({
+export const Route = createFileRoute("/contract/")({
   component: ContractManagement,
 });
 
@@ -87,6 +89,49 @@ export default function ContractManagement() {
     queryFn: getRooms,
     queryKey: ["rooms"],
   });
+
+  // State to store student names
+  const [studentNames, setStudentNames] = useState<Record<number, string>>({});
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+
+  // Fetch student names when contracts are loaded
+  useEffect(() => {
+    const fetchStudentNames = async () => {
+      if (contracts && contracts.length > 0) {
+        setIsLoadingStudents(true);
+        const uniqueStudentIds = [
+          ...new Set(contracts.map((contract) => contract.StudentID)),
+        ];
+
+        try {
+          const studentNamesMap: Record<number, string> = {};
+
+          // Fetch each student's details and store their name
+          await Promise.all(
+            uniqueStudentIds.map(async (studentId) => {
+              const student = await getStudentByID(studentId);
+              if (student) {
+                studentNamesMap[studentId] = student.FullName;
+              }
+            }),
+          );
+
+          setStudentNames(studentNamesMap);
+        } catch (error) {
+          console.error("Error fetching student names:", error);
+        } finally {
+          setIsLoadingStudents(false);
+        }
+      }
+    };
+
+    fetchStudentNames();
+  }, [contracts]);
+
+  // Get student name by ID
+  const getStudentName = (studentId: number) => {
+    return studentNames[studentId] || `Loading...`;
+  };
 
   // Mutations
   const createContractMutation = useMutation({
@@ -525,7 +570,7 @@ export default function ContractManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Contract ID</TableHead>
-                    <TableHead>Student ID</TableHead>
+                    <TableHead>Student</TableHead>
                     <TableHead>Room Number</TableHead>
                     <TableHead>Start Date</TableHead>
                     <TableHead>End Date</TableHead>
@@ -538,7 +583,13 @@ export default function ContractManagement() {
                       <TableCell className="font-medium">
                         {contract.ContractID}
                       </TableCell>
-                      <TableCell>{contract.StudentID}</TableCell>
+                      <TableCell>
+                        {isLoadingStudents ? (
+                          <Skeleton className="h-4 w-28" />
+                        ) : (
+                          getStudentName(contract.StudentID)
+                        )}
+                      </TableCell>
                       <TableCell>{getRoomNumber(contract.RoomID)}</TableCell>
                       <TableCell>{formatDate(contract.StartDate)}</TableCell>
                       <TableCell>{formatDate(contract.EndDate)}</TableCell>
@@ -565,6 +616,16 @@ export default function ContractManagement() {
                             <Trash2 className="h-3 w-3" />
                             Delete
                           </Button>
+                          <Link
+                            to={`/contract/$contractId`}
+                            params={{
+                              contractId: contract.ContractID.toString(),
+                            }}
+                          >
+                            <Button variant="secondary" size="sm">
+                              <Info className="h-3 w-3" />
+                            </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>

@@ -29,7 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, CircleGauge } from "lucide-react";
+import { Trash2, Edit, Plus, X, CircleGauge, Building2 } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
@@ -190,7 +190,7 @@ export default function RoomTypeManagement() {
     <div className="w-full p-6">
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <CircleGauge
+          <Building2
             className="text-purple-600 bg-purple-100 rounded-lg p-1"
             size={36}
           />

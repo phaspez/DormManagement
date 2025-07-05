@@ -13,10 +13,12 @@ import { Route as StudentRouteImport } from './routes/student'
 import { Route as ServiceusageRouteImport } from './routes/serviceusage'
 import { Route as ServiceRouteImport } from './routes/service'
 import { Route as RoomtypeRouteImport } from './routes/roomtype'
-import { Route as RoomRouteImport } from './routes/room'
 import { Route as InvoiceRouteImport } from './routes/invoice'
-import { Route as ContractRouteImport } from './routes/contract'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RoomIndexRouteImport } from './routes/room/index'
+import { Route as ContractIndexRouteImport } from './routes/contract/index'
+import { Route as RoomRoomIdRouteImport } from './routes/room/$roomId'
+import { Route as ContractContractIdRouteImport } from './routes/contract/$contractId'
 
 const StudentRoute = StudentRouteImport.update({
   id: '/student',
@@ -38,19 +40,9 @@ const RoomtypeRoute = RoomtypeRouteImport.update({
   path: '/roomtype',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RoomRoute = RoomRouteImport.update({
-  id: '/room',
-  path: '/room',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const InvoiceRoute = InvoiceRouteImport.update({
   id: '/invoice',
   path: '/invoice',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContractRoute = ContractRouteImport.update({
-  id: '/contract',
-  path: '/contract',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -58,80 +50,114 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoomIndexRoute = RoomIndexRouteImport.update({
+  id: '/room/',
+  path: '/room/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContractIndexRoute = ContractIndexRouteImport.update({
+  id: '/contract/',
+  path: '/contract/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoomRoomIdRoute = RoomRoomIdRouteImport.update({
+  id: '/room/$roomId',
+  path: '/room/$roomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContractContractIdRoute = ContractContractIdRouteImport.update({
+  id: '/contract/$contractId',
+  path: '/contract/$contractId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/contract': typeof ContractRoute
   '/invoice': typeof InvoiceRoute
-  '/room': typeof RoomRoute
   '/roomtype': typeof RoomtypeRoute
   '/service': typeof ServiceRoute
   '/serviceusage': typeof ServiceusageRoute
   '/student': typeof StudentRoute
+  '/contract/$contractId': typeof ContractContractIdRoute
+  '/room/$roomId': typeof RoomRoomIdRoute
+  '/contract': typeof ContractIndexRoute
+  '/room': typeof RoomIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/contract': typeof ContractRoute
   '/invoice': typeof InvoiceRoute
-  '/room': typeof RoomRoute
   '/roomtype': typeof RoomtypeRoute
   '/service': typeof ServiceRoute
   '/serviceusage': typeof ServiceusageRoute
   '/student': typeof StudentRoute
+  '/contract/$contractId': typeof ContractContractIdRoute
+  '/room/$roomId': typeof RoomRoomIdRoute
+  '/contract': typeof ContractIndexRoute
+  '/room': typeof RoomIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/contract': typeof ContractRoute
   '/invoice': typeof InvoiceRoute
-  '/room': typeof RoomRoute
   '/roomtype': typeof RoomtypeRoute
   '/service': typeof ServiceRoute
   '/serviceusage': typeof ServiceusageRoute
   '/student': typeof StudentRoute
+  '/contract/$contractId': typeof ContractContractIdRoute
+  '/room/$roomId': typeof RoomRoomIdRoute
+  '/contract/': typeof ContractIndexRoute
+  '/room/': typeof RoomIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/contract'
     | '/invoice'
-    | '/room'
     | '/roomtype'
     | '/service'
     | '/serviceusage'
     | '/student'
+    | '/contract/$contractId'
+    | '/room/$roomId'
+    | '/contract'
+    | '/room'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/contract'
     | '/invoice'
-    | '/room'
     | '/roomtype'
     | '/service'
     | '/serviceusage'
     | '/student'
+    | '/contract/$contractId'
+    | '/room/$roomId'
+    | '/contract'
+    | '/room'
   id:
     | '__root__'
     | '/'
-    | '/contract'
     | '/invoice'
-    | '/room'
     | '/roomtype'
     | '/service'
     | '/serviceusage'
     | '/student'
+    | '/contract/$contractId'
+    | '/room/$roomId'
+    | '/contract/'
+    | '/room/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ContractRoute: typeof ContractRoute
   InvoiceRoute: typeof InvoiceRoute
-  RoomRoute: typeof RoomRoute
   RoomtypeRoute: typeof RoomtypeRoute
   ServiceRoute: typeof ServiceRoute
   ServiceusageRoute: typeof ServiceusageRoute
   StudentRoute: typeof StudentRoute
+  ContractContractIdRoute: typeof ContractContractIdRoute
+  RoomRoomIdRoute: typeof RoomRoomIdRoute
+  ContractIndexRoute: typeof ContractIndexRoute
+  RoomIndexRoute: typeof RoomIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -164,25 +190,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoomtypeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/room': {
-      id: '/room'
-      path: '/room'
-      fullPath: '/room'
-      preLoaderRoute: typeof RoomRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/invoice': {
       id: '/invoice'
       path: '/invoice'
       fullPath: '/invoice'
       preLoaderRoute: typeof InvoiceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contract': {
-      id: '/contract'
-      path: '/contract'
-      fullPath: '/contract'
-      preLoaderRoute: typeof ContractRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -192,18 +204,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/room/': {
+      id: '/room/'
+      path: '/room'
+      fullPath: '/room'
+      preLoaderRoute: typeof RoomIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contract/': {
+      id: '/contract/'
+      path: '/contract'
+      fullPath: '/contract'
+      preLoaderRoute: typeof ContractIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/room/$roomId': {
+      id: '/room/$roomId'
+      path: '/room/$roomId'
+      fullPath: '/room/$roomId'
+      preLoaderRoute: typeof RoomRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contract/$contractId': {
+      id: '/contract/$contractId'
+      path: '/contract/$contractId'
+      fullPath: '/contract/$contractId'
+      preLoaderRoute: typeof ContractContractIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ContractRoute: ContractRoute,
   InvoiceRoute: InvoiceRoute,
-  RoomRoute: RoomRoute,
   RoomtypeRoute: RoomtypeRoute,
   ServiceRoute: ServiceRoute,
   ServiceusageRoute: ServiceusageRoute,
   StudentRoute: StudentRoute,
+  ContractContractIdRoute: ContractContractIdRoute,
+  RoomRoomIdRoute: RoomRoomIdRoute,
+  ContractIndexRoute: ContractIndexRoute,
+  RoomIndexRoute: RoomIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

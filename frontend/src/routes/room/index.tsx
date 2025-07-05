@@ -8,7 +8,7 @@ import {
   Room,
   RoomStatus,
 } from "~/fetch/room";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -38,14 +38,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, MonitorCog, Hotel } from "lucide-react";
+import { Trash2, Edit, Plus, X, MonitorCog, Hotel, Info } from "lucide-react";
 import RoomTypeManagement from "~/routes/roomtype";
 import { getRoomTypes, RoomType } from "~/fetch/roomType";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
 
-export const Route = createFileRoute("/room")({
+export const Route = createFileRoute("/room/")({
   component: RoomManagement,
 });
 
@@ -421,7 +421,7 @@ export default function RoomManagement() {
                   Edit Room Type...
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl max-w-full">
+              <DialogContent className="sm:w-7xl">
                 <RoomTypeManagement />
               </DialogContent>
             </Dialog>
@@ -465,7 +465,7 @@ export default function RoomManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -485,6 +485,14 @@ export default function RoomManagement() {
                             <Trash2 className="h-3 w-3" />
                             Delete
                           </Button>
+                          <Link
+                            to={`/room/$roomId`}
+                            params={{ roomId: room.RoomID.toString() }}
+                          >
+                            <Button variant="secondary" size="sm">
+                              <Info className="h-3 w-3" />
+                            </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>
