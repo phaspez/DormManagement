@@ -566,7 +566,7 @@ export default function ServiceUsageManagement() {
                   Edit Services...
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl max-w-full">
+              <DialogContent className="sm:max-w-4xl lg:max-w-6xl max-w-full">
                 <ServiceManagement />
               </DialogContent>
             </Dialog>

@@ -31,6 +31,7 @@ import {
 } from "~/components/ui/breadcrumb";
 import { Separator } from "~/components/ui/separator";
 import { ThemeProvider } from "~/components/ThemeProvider";
+import { Toaster } from "~/components/ui/sonner";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -110,9 +111,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <div className="w-full px-12 py-4">{children}</div>
             </SidebarInset>
           </SidebarProvider>
+          <Toaster />
         </ThemeProvider>
         <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools buttonPosition="bottom-left" />
+        <ReactQueryDevtools buttonPosition="bottom-right" />
         <Scripts />
       </body>
     </html>

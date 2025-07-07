@@ -188,19 +188,21 @@ export default function RoomTypeManagement() {
 
   return (
     <div className="w-full p-6">
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <Building2
-            className="text-purple-600 bg-purple-100 rounded-lg p-1"
-            size={36}
-          />
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Room Type Management
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Manage and define different types of rooms in the dormitory
-            </p>
+      <div className="mb-6 w-full">
+        <div className="flex items-center gap-3 justify-between">
+          <div className="flex items-center gap-3">
+            <Building2
+              className="text-purple-600 bg-purple-100 rounded-lg p-1"
+              size={36}
+            />
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                Room Type Management
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Manage and define different types of rooms in the dormitory
+              </p>
+            </div>
           </div>
           <Dialog
             open={isCreateDialogOpen}

@@ -9,6 +9,10 @@ export interface ServiceUsage {
   ServiceUsageID: number;
 }
 
+export interface ServiceUsageWithName extends ServiceUsage {
+  ServiceName: string;
+}
+
 export async function getServiceUsages() {
   try {
     const response = await fetch(

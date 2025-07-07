@@ -421,7 +421,7 @@ export default function RoomManagement() {
                   Edit Room Type...
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:w-7xl">
+              <DialogContent className="sm:max-w-4xl lg:max-w-6xl max-w-full">
                 <RoomTypeManagement />
               </DialogContent>
             </Dialog>

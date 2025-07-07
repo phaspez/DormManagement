@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import SessionLocal
 from crud import contract as crud_contract
-from schemas.contract import ContractCreate, ContractOut
+from schemas.contract import ContractCreate, ContractOut, ContractDetail
 
 router = APIRouter(
     prefix="/contracts",
@@ -24,6 +24,10 @@ def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
 @router.get("/{contract_id}", response_model=ContractOut)
 def get_contract_by_id(contract_id: int, db: Session = Depends(get_db)):
     return crud_contract.get_contract_by_id(db, contract_id)
+
+@router.get("/{contract_id}/details", response_model=ContractDetail)
+def get_contract_details(contract_id: int, db: Session = Depends(get_db)):
+    return crud_contract.get_contract_by_id_with_details(db, contract_id)
 
 @router.put("/{contract_id}", response_model=ContractOut)
 def update_contract(contract_id: int, contract: ContractCreate, db: Session = Depends(get_db)):

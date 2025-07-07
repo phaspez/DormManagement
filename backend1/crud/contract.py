@@ -1,5 +1,10 @@
 from sqlalchemy.orm import Session
 from models.contract import Contract
+from models.student import Student
+from models.room import Room
+from models.roomtype import RoomType
+from models.serviceusage import ServiceUsage
+from models.service import Service
 from schemas.contract import ContractCreate
 
 def create_contract(db: Session, contract: ContractCreate):
@@ -30,3 +35,65 @@ def delete_contract(db: Session, contract_id: int):
     db.delete(db_contract)
     db.commit()
     return db_contract
+
+
+def get_contract_by_id_with_details(db: Session, contract_id: int):
+    result = db.query(
+        Contract,
+        Student.FullName.label("StudentName"),
+        Room.RoomNumber.label("RoomNumber"),
+        RoomType.RoomTypeName.label("RoomTypeName")
+    ).join(
+        Student, Contract.StudentID == Student.StudentID
+    ).join(
+        Room, Contract.RoomID == Room.RoomID
+    ).join(
+        RoomType, Room.RoomTypeID == RoomType.RoomTypeID
+    ).filter(
+        Contract.ContractID == contract_id
+    ).first()
+
+    if not result:
+        return None
+
+    contract, student_name, room_number, room_type = result
+
+    # Query service usages
+    service_usages = db.query(
+        ServiceUsage.ServiceUsageID,
+        ServiceUsage.ServiceID,
+        Service.ServiceName,
+        ServiceUsage.Quantity,
+        Service.UnitPrice,
+        ServiceUsage.UsageMonth,
+        ServiceUsage.UsageYear
+    ).join(
+        Service, ServiceUsage.ServiceID == Service.ServiceID
+    ).filter(
+        ServiceUsage.ContractID == contract_id
+    ).all()
+
+    # Create response object
+    response = {
+        "ContractID": contract.ContractID,
+        "StudentID": contract.StudentID,
+        "StudentName": student_name,
+        "RoomID": contract.RoomID,
+        "RoomNumber": room_number,
+        "RoomTypeName": room_type,
+        "StartDate": contract.StartDate,
+        "EndDate": contract.EndDate,
+        "ServiceUsages": [
+            {
+                "ServiceUsageID": su.ServiceUsageID,
+                "ServiceID": su.ServiceID,
+                "ServiceName": su.ServiceName,
+                "Quantity": su.Quantity,
+                "UnitPrice": su.UnitPrice,
+                "UsageMonth": su.UsageMonth,
+                "UsageYear": su.UsageYear
+            } for su in service_usages
+        ]
+    }
+
+    return response
