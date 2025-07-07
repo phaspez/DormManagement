@@ -7,6 +7,7 @@ import {
   putContract,
   Contract,
 } from "~/fetch/contract";
+import { Paginated } from "~/fetch/utils";
 import { getRooms } from "~/fetch/room";
 import { getStudentByID } from "~/fetch/student";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -21,11 +22,30 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Trash2, Edit, Plus, Notebook, Info } from "lucide-react";
+import {
+  Trash2,
+  Edit,
+  Notebook,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
 import ContractFormDialog from "~/components/contract/ContractFormDialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "~/components/ui/pagination";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "~/components/ui/select";
 
 export const Route = createFileRoute("/contract/")({
   component: ContractManagement,
@@ -41,15 +61,29 @@ interface FormErrors {
 export default function ContractManagement() {
   const queryClient = useQueryClient();
 
-  // Fetch contracts
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Fetch contracts with pagination
   const {
-    data: contracts,
+    data: contractsDataRaw,
     isLoading,
     isError,
   } = useQuery({
-    queryFn: getContracts,
-    queryKey: ["contracts"],
+    queryFn: () => getContracts(page, limit),
+    queryKey: ["contracts", page, limit],
   });
+  // Type guard for contractsData
+  const contractsData: Paginated<Contract> =
+    contractsDataRaw &&
+    typeof contractsDataRaw === "object" &&
+    "items" in contractsDataRaw &&
+    "total" in contractsDataRaw
+      ? (contractsDataRaw as Paginated<Contract>)
+      : { items: [], total: 0, page: 1, size: limit, pages: 0 };
+  const contracts: Contract[] = contractsData.items;
+  const total = contractsData.total;
 
   // Fetch rooms for dropdown selection
   const { data: rooms, isLoading: isLoadingRooms } = useQuery({
@@ -67,7 +101,11 @@ export default function ContractManagement() {
       if (contracts && contracts.length > 0) {
         setIsLoadingStudents(true);
         const uniqueStudentIds = [
-          ...new Set(contracts.map((contract) => contract.StudentID)),
+          ...new Set(
+            (contracts as Contract[]).map(
+              (contract: Contract) => contract.StudentID,
+            ),
+          ),
         ];
 
         try {
@@ -75,7 +113,7 @@ export default function ContractManagement() {
 
           // Fetch each student's details and store their name
           await Promise.all(
-            uniqueStudentIds.map(async (studentId) => {
+            uniqueStudentIds.map(async (studentId: number) => {
               const student = await getStudentByID(studentId);
               if (student) {
                 studentNamesMap[studentId] = student.FullName;
@@ -193,6 +231,11 @@ export default function ContractManagement() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Debug: log page and limit changes
+  React.useEffect(() => {
+    console.log("Pagination state changed: page", page, "limit", limit);
+  }, [page, limit]);
+
   if (isLoading || isLoadingRooms) {
     return (
       <div className="w-full">
@@ -273,10 +316,40 @@ export default function ContractManagement() {
       {/* Contract List */}
       <Card>
         <CardHeader>
-          <CardTitle>Contracts ({contracts?.length || 0})</CardTitle>
+          <CardTitle>Contracts ({total})</CardTitle>
         </CardHeader>
         <CardContent>
-          {contracts?.length === 0 ? (
+          <div className="flex items-center justify-between mb-2">
+            <div />
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="page-size"
+                className="text-sm text-muted-foreground"
+              >
+                Rows per page:
+              </label>
+              <Select
+                value={limit.toString()}
+                onValueChange={(val) => {
+                  const newLimit = Number(val);
+                  setLimit(newLimit);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-20 h-8" id="page-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[5, 10, 20, 50].map((size) => (
+                    <SelectItem key={size} value={size.toString()}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {contracts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No contracts found. Create your first contract to get started.
             </div>
@@ -294,7 +367,7 @@ export default function ContractManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {contracts?.map((contract) => (
+                  {contracts.map((contract: Contract) => (
                     <TableRow key={contract.ContractID}>
                       <TableCell className="font-medium">
                         {contract.ContractID}
@@ -350,6 +423,53 @@ export default function ContractManagement() {
               </Table>
             </div>
           )}
+          {/* Pagination Controls */}
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                      console.log("Prev page");
+                    }}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+                {Array.from({ length: Math.ceil(total / limit) }, (_, i) => (
+                  <PaginationItem key={i}>
+                    <Button
+                      variant={page === i + 1 ? "outline" : "ghost"}
+                      size="icon"
+                      onClick={() => {
+                        setPage(i + 1);
+                        console.log("Set page to", i + 1);
+                      }}
+                    >
+                      {i + 1}
+                    </Button>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.min(Math.ceil(total / limit), p + 1));
+                      console.log("Next page");
+                    }}
+                    disabled={page === Math.ceil(total / limit) || total === 0}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -49,10 +49,7 @@ import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
 import { getServices, Service } from "~/fetch/service";
-import RoomTypeManagement from "~/routes/roomtype";
 import ServiceManagement from "~/routes/service";
-import { getContracts, Contract } from "~/fetch/contract";
-import { getStudents, Students } from "~/fetch/student";
 
 export const Route = createFileRoute("/serviceusage")({
   component: ServiceUsageManagement,
@@ -87,26 +84,6 @@ export default function ServiceUsageManagement() {
   } = useQuery({
     queryFn: getServices,
     queryKey: ["services"],
-  });
-
-  // Fetch all contracts for mapping ContractID to StudentID
-  const {
-    data: contracts,
-    isLoading: isContractsLoading,
-    isError: isContractsError,
-  } = useQuery({
-    queryFn: getContracts,
-    queryKey: ["contracts"],
-  });
-
-  // Fetch all students for mapping StudentID to student names
-  const {
-    data: students,
-    isLoading: isStudentsLoading,
-    isError: isStudentsError,
-  } = useQuery({
-    queryFn: getStudents,
-    queryKey: ["students"],
   });
 
   // Mutations
@@ -268,29 +245,7 @@ export default function ServiceUsageManagement() {
     return `${monthName} ${year}`;
   };
 
-  // Function to get student name from contract ID
-  const getStudentNameByContractID = (contractID: number): string => {
-    if (!contracts || !students) return "Unknown";
-
-    // Find the contract with the given ID
-    const contract = contracts.find(
-      (c) => parseInt(c.ContractID) === contractID,
-    );
-    if (!contract) return "Unknown Contract";
-
-    // Find the student associated with the contract
-    const student = students.find((s) => s.StudentID === contract.StudentID);
-    if (!student) return "Unknown Student";
-
-    return student.FullName;
-  };
-
-  if (
-    isLoading ||
-    isServicesLoading ||
-    isContractsLoading ||
-    isStudentsLoading
-  ) {
+  if (isLoading || isServicesLoading) {
     return (
       <div className="w-full">
         <Header
@@ -310,7 +265,7 @@ export default function ServiceUsageManagement() {
     );
   }
 
-  if (isError || isServicesError || isContractsError || isStudentsError) {
+  if (isError || isServicesError) {
     return (
       <div className="container mx-auto p-4">
         <Alert className="max-w-md mx-auto">
@@ -592,7 +547,6 @@ export default function ServiceUsageManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Contract ID</TableHead>
-                    <TableHead>Student Name</TableHead>
                     <TableHead>Service Name</TableHead>
                     <TableHead>Quantity</TableHead>
                     <TableHead>Usage Period</TableHead>
@@ -603,9 +557,6 @@ export default function ServiceUsageManagement() {
                   {serviceUsages?.map((usage) => (
                     <TableRow key={usage.ServiceUsageID}>
                       <TableCell>{usage.ContractID}</TableCell>
-                      <TableCell>
-                        {getStudentNameByContractID(usage.ContractID)}
-                      </TableCell>
                       <TableCell>
                         {
                           services?.find(

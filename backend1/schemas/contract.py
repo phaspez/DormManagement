@@ -43,3 +43,14 @@ class ContractOut(ContractCreate):
 
     class Config:
         orm_mode = True
+
+
+class PaginatedContractResponse(BaseModel):
+    items: List[ContractOut]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+    class Config:
+        orm_mode = True

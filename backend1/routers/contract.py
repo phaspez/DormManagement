@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List
 from database import SessionLocal
 from crud import contract as crud_contract
-from schemas.contract import ContractCreate, ContractOut, ContractDetail
+from schemas.contract import ContractCreate, ContractOut, ContractDetail, PaginatedContractResponse
+import math
 
 router = APIRouter(
     prefix="/contracts",
@@ -37,6 +38,20 @@ def update_contract(contract_id: int, contract: ContractCreate, db: Session = De
 def delete_contract(contract_id: int, db: Session = Depends(get_db)):
     return crud_contract.delete_contract(db, contract_id)
 
-@router.get("/", response_model=List[ContractOut])
-def read_contracts(db: Session = Depends(get_db)):
-    return crud_contract.get_contracts(db) 
+@router.get("/", response_model=PaginatedContractResponse)
+def read_contracts(
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(10, ge=1, le=100, description="Items per page"),
+    db: Session = Depends(get_db)
+):
+    skip = (page - 1) * size
+    contracts, total = crud_contract.get_contracts_with_count(db, skip=skip, limit=size)
+    
+    return {
+        "items": contracts,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": math.ceil(total / size) if total > 0 else 0
+    }
+

@@ -17,8 +17,13 @@ def create_contract(db: Session, contract: ContractCreate):
 def get_contract_by_id(db: Session, contract_id: int):
     return db.query(Contract).filter(Contract.ContractID == contract_id).first()
 
-def get_contracts(db: Session):
-    return db.query(Contract).all()
+def get_contracts(db: Session, skip: int = 0, limit: int = 20):
+    return db.query(Contract).offset(skip).limit(limit).all()
+
+def get_contracts_with_count(db: Session, skip: int = 0, limit: int = 20):
+    total = db.query(Contract).count()
+    contracts = db.query(Contract).offset(skip).limit(limit).all()
+    return contracts, total
 
 def update_contract(db: Session, contract_id: int, contract: ContractCreate):
     db_contract = get_contract_by_id(db, contract_id)
@@ -97,3 +102,4 @@ def get_contract_by_id_with_details(db: Session, contract_id: int):
     }
 
     return response
+

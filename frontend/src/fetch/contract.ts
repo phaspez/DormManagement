@@ -1,16 +1,6 @@
 import { handleResponse } from "~/fetch/utils";
 import { ServiceUsageWithName } from "~/fetch/serviceUsage";
-
-// Extended interface for service usages in contract details
-interface ExtendedServiceUsage {
-  UsageID: number;
-  ServiceName: string;
-  Status: string;
-  StartDate: string;
-  EndDate: string;
-  ServiceID?: number;
-  ContractID?: string;
-}
+import { Paginated } from "~/fetch/utils";
 
 export interface Contract {
   StudentID: number;
@@ -27,18 +17,24 @@ export interface ContractDetails extends Contract {
   ServiceUsages: ServiceUsageWithName[];
 }
 
-export async function getContracts() {
+export async function getContracts(page: number = 1, size: number = 20) {
   try {
+    const queryParams = new URLSearchParams();
+    if (page !== undefined) queryParams.append("page", page.toString());
+    if (size !== undefined) queryParams.append("size", size.toString());
+
     const response = await fetch(
-      import.meta.env.VITE_BACKEND_URL + "/contracts",
+      `${import.meta.env.VITE_BACKEND_URL}/contracts?${queryParams.toString()}`,
       {
         method: "GET",
       },
     );
 
     const data = await handleResponse(response);
-    console.log(data);
-    return data as Contract[];
+    console.log(
+      `${import.meta.env.VITE_BACKEND_URL}/contracts?${queryParams.toString()}`,
+    );
+    return data as Paginated<Contract>;
   } catch (error) {
     console.error("Error fetching contracts:", error);
     throw error;
