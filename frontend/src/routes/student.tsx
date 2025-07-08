@@ -29,7 +29,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, User } from "lucide-react";
+import {
+  Trash2,
+  Edit,
+  Plus,
+  X,
+  User,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteStudent,
@@ -40,6 +48,12 @@ import {
 } from "~/fetch/student";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "~/components/ui/pagination";
+import { Paginated } from "~/fetch/utils";
 
 export const Route = createFileRoute("/student")({
   component: StudentManagement,
@@ -54,15 +68,31 @@ interface FormErrors {
 export default function StudentManagement() {
   const queryClient = useQueryClient();
 
-  // Fetch students
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Fetch students with pagination
   const {
-    data: students,
+    data: studentsDataRaw,
     isLoading,
     isError,
   } = useQuery({
-    queryFn: getStudents,
-    queryKey: ["students"],
+    queryFn: () => getStudents(page, limit),
+    queryKey: ["students", page, limit],
   });
+
+  // Type guard for studentsData
+  const studentsData: Paginated<Students> =
+    studentsDataRaw &&
+    typeof studentsDataRaw === "object" &&
+    "items" in studentsDataRaw &&
+    "total" in studentsDataRaw
+      ? (studentsDataRaw as Paginated<Students>)
+      : { items: [], total: 0, page: 1, size: limit, pages: 0 };
+
+  const students: Students[] = studentsData.items;
+  const total = studentsData.total;
 
   // Mutations
   const createStudentMutation = useMutation({
@@ -175,7 +205,7 @@ export default function StudentManagement() {
   if (isLoading) {
     return (
       <div className="w-full">
-        <Header breadcrumbs={[{ name: "Invoices", url: "/invoice" }]} />
+        <Header breadcrumbs={[{ name: "Students", url: "/student" }]} />
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -351,9 +381,39 @@ export default function StudentManagement() {
       {/* Student List */}
       <Card>
         <CardHeader>
-          <CardTitle>Students ({students?.length || 0})</CardTitle>
+          <CardTitle>Students ({total})</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex items-center justify-between mb-2">
+            <div />
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="page-size"
+                className="text-sm text-muted-foreground"
+              >
+                Rows per page:
+              </label>
+              <Select
+                value={limit.toString()}
+                onValueChange={(val) => {
+                  const newLimit = Number(val);
+                  setLimit(newLimit);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-20 h-8" id="page-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[5, 10, 20, 50].map((size) => (
+                    <SelectItem key={size} value={size.toString()}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           {students?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No students found. Add your first student to get started.
@@ -363,6 +423,7 @@ export default function StudentManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Student ID</TableHead>
                     <TableHead>Full Name</TableHead>
                     <TableHead>Gender</TableHead>
                     <TableHead>Phone Number</TableHead>
@@ -372,6 +433,9 @@ export default function StudentManagement() {
                 <TableBody>
                   {students?.map((student) => (
                     <TableRow key={student.StudentID}>
+                      <TableCell className="font-medium">
+                        {student.StudentID}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {student.FullName}
                       </TableCell>
@@ -408,6 +472,50 @@ export default function StudentManagement() {
               </Table>
             </div>
           )}
+          {/* Pagination Controls */}
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                    }}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+                {Array.from({ length: Math.ceil(total / limit) }, (_, i) => (
+                  <PaginationItem key={i}>
+                    <Button
+                      variant={page === i + 1 ? "outline" : "ghost"}
+                      size="icon"
+                      onClick={() => {
+                        setPage(i + 1);
+                      }}
+                    >
+                      {i + 1}
+                    </Button>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.min(Math.ceil(total / limit), p + 1));
+                    }}
+                    disabled={page === Math.ceil(total / limit) || total === 0}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from datetime import date
-from typing import List
+from typing import List, Generic, TypeVar
+
+from schemas.helper import PaginatedResponse
 
 
 class ServiceUsageBase(BaseModel):
@@ -45,12 +47,8 @@ class ContractOut(ContractCreate):
         orm_mode = True
 
 
-class PaginatedContractResponse(BaseModel):
-    items: List[ContractOut]
-    total: int
-    page: int
-    size: int
-    pages: int
 
-    class Config:
-        orm_mode = True
+class PaginatedContractResponse(PaginatedResponse[ContractOut]):
+    pass
+
+

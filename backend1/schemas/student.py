@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 
+from schemas.helper import PaginatedResponse
+
+
 class StudentCreate(BaseModel):
     FullName: str
     Gender: str
@@ -10,3 +13,6 @@ class StudentOut(StudentCreate):
 
     class Config:
         orm_mode = True
+
+class PaginatedStudentResponse(PaginatedResponse[StudentOut]):
+    pass
