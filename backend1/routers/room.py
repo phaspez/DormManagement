@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import SessionLocal
 from crud import room as crud_room
-from schemas.room import RoomCreate, RoomOut
+from schemas.room import RoomCreate, RoomOut, RoomDetailsOut
 
 router = APIRouter(
     prefix="/rooms",
@@ -23,12 +23,18 @@ def create_room(room: RoomCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=List[RoomOut])
 def read_rooms(db: Session = Depends(get_db)):
-    return crud_room.get_rooms(db) 
+    return crud_room.get_rooms(db)
+
 
 # update room
 @router.put("/{room_id}", response_model=RoomOut)
 def update_room(room_id: int, room: RoomCreate, db: Session = Depends(get_db)):
     return crud_room.update_room(db, room_id, room)
+
+
+@router.get("/{room_id}/details", response_model=RoomDetailsOut)
+def get_room_details(room_id: int, db: Session = Depends(get_db)):
+    return crud_room.get_room_details_by_id(db, room_id)
 
 # delete room
 @router.delete("/{room_id}", response_model=RoomOut)

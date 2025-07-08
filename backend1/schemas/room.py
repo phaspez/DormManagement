@@ -1,3 +1,4 @@
+from datetime import date
 from pydantic import BaseModel
 
 class RoomCreate(BaseModel):
@@ -11,3 +12,13 @@ class RoomOut(RoomCreate):
 
     class Config:
         orm_mode = True
+
+class StudentsInRoom(BaseModel):
+    StudentID: int
+    FullName: str
+    StartDate: date
+    EndDate: date
+
+class RoomDetailsOut(RoomCreate):
+    RoomID: int
+    Students: list[StudentsInRoom]

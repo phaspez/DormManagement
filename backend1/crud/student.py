@@ -23,3 +23,9 @@ def get_students_with_count(db: Session, skip: int = 0, limit: int = 20):
 def update_student(db: Session, student_id: int, student: StudentCreate):
     db_student = get_student_by_id(db, student_id)
     db_student.FullName = student.FullName
+
+def delete_student(db: Session, student_id: int):
+    db_student = get_student_by_id(db, student_id)
+    db.delete(db_student)
+    db.commit()
+    return db_student

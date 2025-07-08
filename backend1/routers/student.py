@@ -23,11 +23,6 @@ def get_db():
 def create_student(student: StudentCreate, db: Session = Depends(get_db)):
     return crud_student.create_student(db, student)
 
-# @router.get("/", response_model=List[StudentOut])
-# def read_students(db: Session = Depends(get_db)):
-#     return crud_student.get_students(db)
-
-
 @router.get("/", response_model=PaginatedStudentResponse)
 def read_students(
         page: int = Query(1, ge=1, description="Page number"),

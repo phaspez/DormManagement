@@ -47,7 +47,6 @@ class ContractOut(ContractCreate):
         orm_mode = True
 
 
-
 class PaginatedContractResponse(PaginatedResponse[ContractOut]):
     pass
 

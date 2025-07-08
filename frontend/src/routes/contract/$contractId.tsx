@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import Header from "~/components/header";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,7 +17,14 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { CalendarIcon, Edit, HomeIcon, UserIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  Edit,
+  HomeIcon,
+  Info,
+  UserIcon,
+  ArrowUpRight,
+} from "lucide-react";
 import ContractFormDialog from "~/components/contract/ContractFormDialog";
 import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
@@ -218,43 +225,49 @@ function RouteComponent() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5" />
-              Student Information
+              <Info className="h-5 w-5" />
+              Information
             </CardTitle>
+            <CardDescription>
+              Details of the student associated with this contract
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <p className="text-sm font-medium">Student ID:</p>
-              <p className="text-sm">{contract.StudentID}</p>
+          <CardContent>
+            <div className="py-4 px-2 grid gap-4">
+              <div className="flex w-full items-center gap-2">
+                <UserIcon className="h-5 w-5" />
+                <div className="flex grow gap-2 justify-between items-center">
+                  <h5 className="text-md font-bold">{contract.StudentName}</h5>
+                  <p className="text-sm">ID: {contract.StudentID}</p>
+                </div>
+              </div>
 
-              <p className="text-sm font-medium">Student Name:</p>
-              <p className="text-sm">{contract.StudentName}</p>
+              <div className="flex items-center gap-2">
+                <HomeIcon className="h-5 w-5" />
+                <div className="flex grow gap-2 justify-between items-center">
+                  <h5 className="text-md font-bold">
+                    Room {contract.RoomNumber}
+                  </h5>
+                  <span className="flex items-center gap-2">
+                    <p className="text-sm">
+                      ID: {contract.RoomID}, Type: {contract.RoomTypeName}
+                    </p>
+                    <Link
+                      to="/room/$roomId"
+                      params={{ roomId: contract.RoomID.toString() }}
+                    >
+                      <Button>
+                        <ArrowUpRight />
+                      </Button>
+                    </Link>
+                  </span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HomeIcon className="h-5 w-5" />
-              Room Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <p className="text-sm font-medium">Room ID:</p>
-              <p className="text-sm">{contract.RoomID}</p>
-
-              <p className="text-sm font-medium">Room Number:</p>
-              <p className="text-sm">{contract.RoomNumber}</p>
-
-              <p className="text-sm font-medium">Room Type:</p>
-              <p className="text-sm">{contract.RoomTypeName}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5" />

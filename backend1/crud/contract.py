@@ -41,6 +41,8 @@ def delete_contract(db: Session, contract_id: int):
     db.commit()
     return db_contract
 
+def get_contracts_by_room(db: Session, room_id: int):
+    return db.query(Contract).filter(Contract.RoomID == room_id).all()
 
 def get_contract_by_id_with_details(db: Session, contract_id: int):
     result = db.query(
