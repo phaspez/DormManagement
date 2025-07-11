@@ -22,7 +22,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, ReceiptText, CalendarIcon } from "lucide-react";
+import {
+  Trash2,
+  Edit,
+  Plus,
+  X,
+  ReceiptText,
+  CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteInvoice,
@@ -41,6 +50,19 @@ import { format } from "date-fns";
 import { cn } from "~/lib/utils";
 import TableSkeleton from "~/components/TableSkeleton";
 import { Skeleton } from "~/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "~/components/ui/pagination";
+import { Paginated } from "~/fetch/utils";
 
 export const Route = createFileRoute("/invoice")({
   component: InvoiceManagement,
@@ -56,15 +78,31 @@ interface FormErrors {
 export default function InvoiceManagement() {
   const queryClient = useQueryClient();
 
-  // Fetch invoices
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Fetch invoices with pagination
   const {
-    data: invoices,
+    data: invoicesDataRaw,
     isLoading,
     isError,
   } = useQuery({
-    queryFn: getInvoices,
-    queryKey: ["invoices"],
+    queryFn: () => getInvoices(page, limit),
+    queryKey: ["invoices", page, limit],
   });
+
+  // Type guard for invoicesData
+  const invoicesData: Paginated<Invoice> =
+    invoicesDataRaw &&
+    typeof invoicesDataRaw === "object" &&
+    "items" in invoicesDataRaw &&
+    "total" in invoicesDataRaw
+      ? (invoicesDataRaw as Paginated<Invoice>)
+      : { items: [], total: 0, page: 1, size: limit, pages: 0 };
+
+  const invoices: Invoice[] = invoicesData.items;
+  const total = invoicesData.total;
 
   // Mutations
   const createInvoiceMutation = useMutation({
@@ -491,6 +529,36 @@ export default function InvoiceManagement() {
           <CardTitle>Invoices ({invoices?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex items-center justify-between mb-2">
+            <div />
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="page-size"
+                className="text-sm text-muted-foreground"
+              >
+                Rows per page:
+              </label>
+              <Select
+                value={limit.toString()}
+                onValueChange={(val) => {
+                  const newLimit = Number(val);
+                  setLimit(newLimit);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-20 h-8" id="page-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[5, 10, 20, 50].map((size) => (
+                    <SelectItem key={size} value={size.toString()}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           {invoices?.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No invoices found. Create your first invoice to get started.
@@ -551,6 +619,50 @@ export default function InvoiceManagement() {
               </Table>
             </div>
           )}
+          {/* Pagination Controls */}
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                    }}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+                {Array.from({ length: Math.ceil(total / limit) }, (_, i) => (
+                  <PaginationItem key={i}>
+                    <Button
+                      variant={page === i + 1 ? "outline" : "ghost"}
+                      size="icon"
+                      onClick={() => {
+                        setPage(i + 1);
+                      }}
+                    >
+                      {i + 1}
+                    </Button>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.min(Math.ceil(total / limit), p + 1));
+                    }}
+                    disabled={page === Math.ceil(total / limit) || total === 0}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -46,9 +46,8 @@ export const Route = createRootRouteWithContext<{
         content: "width=device-width, initial-scale=1",
       },
       ...seo({
-        title:
-          "TanStack Start | Type-Safe, Client-First, Full-Stack React Framework",
-        description: `TanStack Start is a type-safe, client-first, full-stack React framework. `,
+        title: "Dorm Management | QTDL",
+        description: `Data Management Project for Dormitory Management System`,
       }),
     ],
     links: [
@@ -101,6 +100,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html>
       <head>
+        {process.env.NODE_ENV === "development" && (
+          <script
+            crossOrigin="anonymous"
+            src="//unpkg.com/react-scan/dist/auto.global.js"
+          />
+        )}
         <HeadContent />
       </head>
       <body>

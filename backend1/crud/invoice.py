@@ -15,6 +15,11 @@ def get_invoice_by_id(db: Session, invoice_id: int):
 def get_invoices(db: Session):
     return db.query(Invoice).all()
 
+def get_invoices_with_count(db: Session, skip: int = 0, limit: int = 20):
+    total = db.query(Invoice).count()
+    invoices = db.query(Invoice).offset(skip).limit(limit).all()
+    return invoices, total
+
 def update_invoice(db: Session, invoice_id: int, invoice: InvoiceCreate):
     db_invoice = get_invoice_by_id(db, invoice_id)
     db_invoice.ServiceUsageID = invoice.ServiceUsageID

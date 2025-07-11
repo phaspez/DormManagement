@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
+from schemas.helper import PaginatedResponse
 
 class InvoiceCreate(BaseModel):
     ServiceUsageID: int
@@ -12,3 +13,6 @@ class InvoiceOut(InvoiceCreate):
 
     class Config:
         orm_mode = True
+
+class PaginatedInvoiceResponse(PaginatedResponse[InvoiceOut]):
+    pass

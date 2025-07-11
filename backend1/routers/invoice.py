@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+import math
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List
 from database import SessionLocal
 from crud import invoice as crud_invoice
-from schemas.invoice import InvoiceCreate, InvoiceOut
+from schemas.invoice import InvoiceCreate, InvoiceOut, PaginatedInvoiceResponse
 
 router = APIRouter(
     prefix="/invoices",
@@ -21,9 +22,21 @@ def get_db():
 def create_invoice(invoice: InvoiceCreate, db: Session = Depends(get_db)):
     return crud_invoice.create_invoice(db, invoice)
 
-@router.get("/", response_model=List[InvoiceOut])
-def read_invoices(db: Session = Depends(get_db)):
-    return crud_invoice.get_invoices(db) 
+@router.get("/", response_model=PaginatedInvoiceResponse)
+def read_invoices_paginated(
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(10, ge=1, le=100, description="Items per page"),
+    db: Session = Depends(get_db)
+):
+    skip = (page - 1) * size
+    invoices, total = crud_invoice.get_invoices_with_count(db, skip, size)
+    return {
+        "items": invoices,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": math.ceil(total / size) if total > 0 else 0
+    }
 
 @router.get("/{invoice_id}", response_model=InvoiceOut)
 def get_invoice_by_id(invoice_id: int, db: Session = Depends(get_db)):
