@@ -15,6 +15,12 @@ def get_serviceusage_by_id(db: Session, serviceusage_id: int):
 def get_serviceusages(db: Session):
     return db.query(ServiceUsage).all()
 
+def get_serviceusages_with_count(db: Session, skip: int = 0, limit: int = 20):
+    """Get paginated service usages with total count"""
+    total = db.query(ServiceUsage).count()
+    serviceusages = db.query(ServiceUsage).offset(skip).limit(limit).all()
+    return serviceusages, total
+
 def update_serviceusage(db: Session, serviceusage_id: int, serviceusage: ServiceUsageCreate):
     db_serviceusage = get_serviceusage_by_id(db, serviceusage_id)
     db_serviceusage.ContractID = serviceusage.ContractID

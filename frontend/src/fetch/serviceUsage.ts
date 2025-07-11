@@ -1,4 +1,4 @@
-import { handleResponse } from "~/fetch/utils";
+import { handleResponse, Paginated } from "~/fetch/utils";
 
 export interface ServiceUsage {
   ContractID: number;
@@ -13,10 +13,14 @@ export interface ServiceUsageWithName extends ServiceUsage {
   ServiceName: string;
 }
 
-export async function getServiceUsages() {
+export async function getServiceUsages(page: number = 1, size: number = 20) {
   try {
+    const queryParams = new URLSearchParams();
+    if (page !== undefined) queryParams.append("page", page.toString());
+    if (size !== undefined) queryParams.append("size", size.toString());
     const response = await fetch(
-      import.meta.env.VITE_BACKEND_URL + "/serviceusages",
+      import.meta.env.VITE_BACKEND_URL +
+        `/serviceusages?${queryParams.toString()}`,
       {
         method: "GET",
       },
@@ -24,7 +28,7 @@ export async function getServiceUsages() {
 
     const data = await handleResponse(response);
     console.log(data);
-    return data as ServiceUsage[];
+    return data as Paginated<ServiceUsage>;
   } catch (error) {
     console.error("Error fetching service usages:", error);
     throw error;

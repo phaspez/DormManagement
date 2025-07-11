@@ -53,6 +53,7 @@ import {
   PaginationContent,
   PaginationItem,
 } from "~/components/ui/pagination";
+import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 
 export const Route = createFileRoute("/student")({
@@ -474,47 +475,12 @@ export default function StudentManagement() {
           )}
           {/* Pagination Controls */}
           <div className="mt-4 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setPage((p) => Math.max(1, p - 1));
-                    }}
-                    disabled={page === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                </PaginationItem>
-                {Array.from({ length: Math.ceil(total / limit) }, (_, i) => (
-                  <PaginationItem key={i}>
-                    <Button
-                      variant={page === i + 1 ? "outline" : "ghost"}
-                      size="icon"
-                      onClick={() => {
-                        setPage(i + 1);
-                      }}
-                    >
-                      {i + 1}
-                    </Button>
-                  </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setPage((p) => Math.min(Math.ceil(total / limit), p + 1));
-                    }}
-                    disabled={page === Math.ceil(total / limit) || total === 0}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            <PaginationNav
+              page={page}
+              total={total}
+              limit={limit}
+              onPageChange={setPage}
+            />
           </div>
         </CardContent>
       </Card>

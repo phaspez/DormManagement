@@ -48,8 +48,9 @@ import {
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
-import { getServices, Service } from "~/fetch/service";
+import { getServices } from "~/fetch/service";
 import ServiceManagement from "~/routes/service";
+import { PaginationNav } from "~/components/ui/pagination-nav";
 
 export const Route = createFileRoute("/serviceusage")({
   component: ServiceUsageManagement,
@@ -66,15 +67,31 @@ interface FormErrors {
 export default function ServiceUsageManagement() {
   const queryClient = useQueryClient();
 
-  // Fetch service usages
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Fetch service usages with pagination
   const {
-    data: serviceUsages,
+    data: serviceUsagesDataRaw,
     isLoading,
     isError,
   } = useQuery({
-    queryFn: getServiceUsages,
-    queryKey: ["serviceUsages"],
+    queryFn: () => getServiceUsages(page, limit),
+    queryKey: ["serviceUsages", page, limit],
   });
+
+  // Type guard for serviceUsagesData
+  const serviceUsagesData =
+    serviceUsagesDataRaw &&
+    typeof serviceUsagesDataRaw === "object" &&
+    "items" in serviceUsagesDataRaw &&
+    "total" in serviceUsagesDataRaw
+      ? serviceUsagesDataRaw
+      : { items: [], total: 0, page: 1, size: limit, pages: 0 };
+
+  const serviceUsages = serviceUsagesData.items;
+  const total = serviceUsagesData.total;
 
   // Fetch all services for mapping ServiceID to ServiceName
   const {
@@ -532,12 +549,40 @@ export default function ServiceUsageManagement() {
       {/* Service Usage List */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            Service Usage Records ({serviceUsages?.length || 0})
-          </CardTitle>
+          <CardTitle>Service Usage Records ({total})</CardTitle>
         </CardHeader>
         <CardContent>
-          {serviceUsages?.length === 0 ? (
+          <div className="flex items-center justify-between mb-2">
+            <div />
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="page-size"
+                className="text-sm text-muted-foreground"
+              >
+                Rows per page:
+              </label>
+              <Select
+                value={limit.toString()}
+                onValueChange={(val) => {
+                  const newLimit = Number(val);
+                  setLimit(newLimit);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-20 h-8" id="page-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[5, 10, 20, 50].map((size) => (
+                    <SelectItem key={size} value={size.toString()}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {serviceUsages.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No service usage records found. Add a new record to get started.
             </div>
@@ -555,7 +600,7 @@ export default function ServiceUsageManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {serviceUsages?.map((usage) => (
+                  {serviceUsages.map((usage: ServiceUsage) => (
                     <TableRow key={usage.ServiceUsageID}>
                       <TableCell>{usage.ServiceUsageID}</TableCell>
                       <TableCell>{usage.ContractID}</TableCell>
@@ -601,6 +646,15 @@ export default function ServiceUsageManagement() {
               </Table>
             </div>
           )}
+          {/* Pagination Controls */}
+          <div className="mt-4 flex justify-center">
+            <PaginationNav
+              page={page}
+              total={total}
+              limit={limit}
+              onPageChange={setPage}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>

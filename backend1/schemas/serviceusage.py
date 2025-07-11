@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
+from schemas.helper import PaginatedResponse
 
 class ServiceUsageCreate(BaseModel):
     ContractID: int
@@ -14,3 +15,5 @@ class ServiceUsageOut(ServiceUsageCreate):
     class Config:
         orm_mode = True
 
+class PaginatedServiceUsageResponse(PaginatedResponse[ServiceUsageOut]):
+    pass

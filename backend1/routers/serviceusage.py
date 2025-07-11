@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
+import math
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List
 from database import SessionLocal
 from crud import serviceusage as crud_serviceusage
-from schemas.serviceusage import ServiceUsageCreate, ServiceUsageOut
+from schemas.serviceusage import ServiceUsageCreate, ServiceUsageOut, PaginatedServiceUsageResponse
 
 router = APIRouter(
     prefix="/serviceusages",
@@ -21,9 +22,25 @@ def get_db():
 def create_serviceusage(serviceusage: ServiceUsageCreate, db: Session = Depends(get_db)):
     return crud_serviceusage.create_serviceusage(db, serviceusage)
 
-@router.get("/", response_model=List[ServiceUsageOut])
-def read_serviceusages(db: Session = Depends(get_db)):
-    return crud_serviceusage.get_serviceusages(db) 
+@router.get("/", response_model=PaginatedServiceUsageResponse)
+def read_serviceusages_paginated(
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(10, ge=1, le=100, description="Items per page"),
+    db: Session = Depends(get_db)
+):
+    skip = (page - 1) * size
+    serviceusages, total = crud_serviceusage.get_serviceusages_with_count(db, skip, size)
+    return {
+        "items": serviceusages,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": math.ceil(total / size) if total > 0 else 0
+    }
+
+@router.get("/all", response_model=List[ServiceUsageOut])
+def read_all_serviceusages(db: Session = Depends(get_db)):
+    return crud_serviceusage.get_serviceusages(db)
 
 @router.get("/{serviceusage_id}", response_model=ServiceUsageOut)
 def get_serviceusage_by_id(serviceusage_id: int, db: Session = Depends(get_db)):

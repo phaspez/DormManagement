@@ -33,6 +33,7 @@ import { Trash2, Edit, Plus, X, CircleGauge, Building2 } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
+import { PaginationNav } from "~/components/ui/pagination-nav";
 
 export const Route = createFileRoute("/roomtype")({
   component: RoomTypeManagement,
