@@ -29,15 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import {
-  Trash2,
-  Edit,
-  Plus,
-  X,
-  User,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Trash2, Edit, Plus, X, User } from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteStudent,
@@ -48,11 +40,6 @@ import {
 } from "~/fetch/student";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "~/components/ui/pagination";
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 

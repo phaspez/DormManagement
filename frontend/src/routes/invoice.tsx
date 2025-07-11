@@ -22,16 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import {
-  Trash2,
-  Edit,
-  Plus,
-  X,
-  ReceiptText,
-  CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Trash2, Edit, Plus, X, ReceiptText, CalendarIcon } from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteInvoice,
@@ -57,11 +48,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "~/components/ui/pagination";
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 

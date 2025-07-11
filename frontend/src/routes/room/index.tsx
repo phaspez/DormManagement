@@ -38,27 +38,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import {
-  Trash2,
-  Edit,
-  Plus,
-  X,
-  MonitorCog,
-  Hotel,
-  Info,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Trash2, Edit, Plus, X, MonitorCog, Hotel, Info } from "lucide-react";
 import RoomTypeManagement from "~/routes/roomtype";
-import { getRoomTypes, RoomType } from "~/fetch/roomType";
+import { getRoomTypes } from "~/fetch/roomType";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "~/components/ui/pagination";
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 

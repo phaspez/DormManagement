@@ -9,7 +9,6 @@ import {
   BaseContract,
 } from "~/fetch/contract";
 import { Paginated } from "~/fetch/utils";
-import { getRooms } from "~/fetch/room";
 import { getStudentByID } from "~/fetch/student";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -23,23 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  Trash2,
-  Edit,
-  Notebook,
-  Info,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Trash2, Edit, Notebook, Info } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
 import ContractFormDialog from "~/components/contract/ContractFormDialog";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-} from "~/components/ui/pagination";
 import {
   Select,
   SelectTrigger,

@@ -1,19 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { getRooms } from "~/fetch/room";
 import Header from "~/components/header";
-import React from "react";
-import {
-  House,
-  Hotel,
-  ReceiptText,
-  User,
-  Notebook,
-  Bath,
-  CircleGauge,
-  Command,
-} from "lucide-react";
+import { Hotel, ReceiptText, User, Notebook, CircleGauge } from "lucide-react";
+
 export const Route = createFileRoute("/")({
   component: Home,
 });

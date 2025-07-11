@@ -5,7 +5,6 @@ import {
   ReceiptText,
   User,
   Notebook,
-  Bath,
   CircleGauge,
 } from "lucide-react";
 
@@ -17,7 +16,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarMenuItem,
   SidebarRail,
 } from "~/components/ui/sidebar";
 

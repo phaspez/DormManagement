@@ -36,15 +36,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import {
-  Trash2,
-  Edit,
-  Plus,
-  X,
-  Bath,
-  MonitorCog,
-  CircleGauge,
-} from "lucide-react";
+import { Trash2, Edit, Plus, X, MonitorCog, CircleGauge } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";

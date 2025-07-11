@@ -8,7 +8,7 @@ import {
   ContractDetails,
   BaseContract,
 } from "~/fetch/contract";
-import { getRooms, Room } from "~/fetch/room";
+import { Room } from "~/fetch/room";
 import { format, parseISO } from "date-fns";
 import {
   Card,
@@ -45,7 +45,7 @@ export const Route = createFileRoute("/contract/$contractId")({
 function RouteComponent() {
   const { contractId } = Route.useParams();
   const [contract, setContract] = useState<ContractDetails | null>(null);
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [rooms, _setRooms] = useState<Room[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
