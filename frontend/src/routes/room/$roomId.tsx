@@ -14,6 +14,9 @@ import { Badge } from "~/components/ui/badge";
 import { CalendarIcon, Edit, HomeIcon, UsersIcon } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
+import RoomFormDialog from "~/components/room/RoomFormDialog";
+import { getRoomTypes } from "~/fetch/roomType";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/room/$roomId")({
   component: RouteComponent,
@@ -38,23 +41,38 @@ function RouteComponent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Edit dialog state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<any>(null);
+  const [errors, setErrors] = useState<any>({});
+  const [roomTypes, setRoomTypes] = useState<any[]>([]);
+
+  // Fetch room types
+  useEffect(() => {
+    getRoomTypes().then(setRoomTypes);
+  }, []);
+
   useEffect(() => {
     const fetchRoomDetails = async () => {
       try {
         setIsLoading(true);
         const roomData = await getRoomsByID(Number(roomId));
-
-        // Ensure that Students is always treated as an array
         const students = Array.isArray(roomData.Students)
           ? roomData.Students
           : roomData.Students
             ? [roomData.Students]
             : [];
-
         setRoom({
           ...roomData,
           Students: students,
         } as RoomDetailsWithStudents);
+        // Pre-fill formData for editing
+        setFormData({
+          RoomTypeID: roomData.RoomTypeID,
+          RoomNumber: roomData.RoomNumber,
+          MaxOccupancy: roomData.MaxOccupancy,
+          Status: roomData.Status,
+        });
       } catch (err) {
         console.error("Error fetching room details:", err);
         setError(err as Error);
@@ -62,9 +80,57 @@ function RouteComponent() {
         setIsLoading(false);
       }
     };
-
     fetchRoomDetails();
   }, [roomId]);
+
+  // Mutation for updating room
+  const updateRoomMutation = useMutation({
+    mutationFn: async (updatedRoom: any) => {
+      await putRoom({ ...room, ...updatedRoom });
+    },
+    onSuccess: () => {
+      setIsEditDialogOpen(false);
+      window.location.reload();
+    },
+  });
+
+  // Handlers
+  const handleInputChange = (name: string, value: string | number) => {
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev: any) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: any = {};
+    if (!formData.RoomNumber?.trim())
+      newErrors.RoomNumber = "Room number is required";
+    if (!formData.RoomTypeID || formData.RoomTypeID <= 0)
+      newErrors.RoomTypeID = "Please select a room type";
+    if (!formData.MaxOccupancy || formData.MaxOccupancy <= 0)
+      newErrors.MaxOccupancy = "Max occupancy must be greater than 0";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleUpdateRoom = () => {
+    if (!validateForm()) return;
+    updateRoomMutation.mutate(formData);
+  };
+
+  const resetForm = () => {
+    setIsEditDialogOpen(false);
+    setErrors({});
+    if (room) {
+      setFormData({
+        RoomTypeID: room.RoomTypeID,
+        RoomNumber: room.RoomNumber,
+        MaxOccupancy: room.MaxOccupancy,
+        Status: room.Status,
+      });
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     try {
@@ -141,26 +207,39 @@ function RouteComponent() {
         breadcrumbs={[
           { name: "Rooms", url: "/room" },
           {
-            name: `Room ${room.RoomNumber}`,
+            name: `Room ${room?.RoomNumber ?? roomId}`,
             url: `/room/${roomId}`,
           },
         ]}
       />
-
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Room Details</h1>
         <Button
           variant="outline"
           className="flex items-center gap-2"
-          onClick={() =>
-            toast.info("Edit functionality will be implemented soon")
-          }
+          onClick={() => setIsEditDialogOpen(true)}
         >
           <Edit className="h-4 w-4" />
           Edit Room
         </Button>
       </div>
-
+      <RoomFormDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        editingRoom={room}
+        roomTypes={roomTypes}
+        formData={formData || {}}
+        setFormData={setFormData}
+        errors={errors}
+        setErrors={setErrors}
+        handleInputChange={handleInputChange}
+        handleCreateRoom={() => {}}
+        handleUpdateRoom={handleUpdateRoom}
+        resetForm={resetForm}
+        createRoomMutation={{ isPending: false }}
+        updateRoomMutation={updateRoomMutation}
+        showCreateNewButton={false}
+      />
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
