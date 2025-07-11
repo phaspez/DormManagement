@@ -1,4 +1,4 @@
-import { handleResponse } from "~/fetch/utils";
+import { handleResponse, Paginated } from "~/fetch/utils";
 
 export enum RoomStatus {
   Available = "Available",
@@ -22,15 +22,27 @@ export interface RoomDetails extends Room {
   };
 }
 
-export async function getRooms() {
+export interface RoomSearchResult {
+  RoomID: number;
+  RoomNumber: string;
+}
+
+export async function getRooms(page: number = 1, size: number = 20) {
   try {
-    const response = await fetch(import.meta.env.VITE_BACKEND_URL + "/rooms", {
-      method: "GET",
-    });
+    const queryParams = new URLSearchParams();
+    if (page !== undefined) queryParams.append("page", page.toString());
+    if (size !== undefined) queryParams.append("size", size.toString());
+
+    const response = await fetch(
+      import.meta.env.VITE_BACKEND_URL + `/rooms?${queryParams.toString()}`,
+      {
+        method: "GET",
+      },
+    );
 
     const data = await handleResponse(response);
     console.log(data);
-    return data as Room[];
+    return data as Paginated<Room>;
   } catch (error) {
     console.error("Error fetching rooms:", error);
     throw error;
@@ -110,6 +122,25 @@ export async function deleteRoom(roomID: number) {
     return data as Room;
   } catch (error) {
     console.error("Error deleting room:", error);
+    throw error;
+  }
+}
+
+export async function searchRooms(keyword: string) {
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_BACKEND_URL +
+        `/rooms/search/by-number?room_number=${encodeURIComponent(keyword)}`,
+      {
+        method: "GET",
+      },
+    );
+
+    const data = await handleResponse(response);
+    console.log(data);
+    return data as RoomSearchResult[];
+  } catch (error) {
+    console.error("Error searching rooms:", error);
     throw error;
   }
 }

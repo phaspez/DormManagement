@@ -46,8 +46,17 @@ class ContractOut(ContractCreate):
     class Config:
         orm_mode = True
 
+class ContractPaginatedOut(BaseModel):
+    ContractID: int
+    RoomNumber: str
+    StudentID: int
+    RoomID: int
+    StartDate: date
+    EndDate: date
 
-class PaginatedContractResponse(PaginatedResponse[ContractOut]):
+
+
+class PaginatedContractResponse(PaginatedResponse[ContractPaginatedOut]):
     pass
 
 

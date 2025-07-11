@@ -6,6 +6,7 @@ import {
   putContract,
   Contract,
   ContractDetails,
+  BaseContract,
 } from "~/fetch/contract";
 import { getRooms, Room } from "~/fetch/room";
 import { format, parseISO } from "date-fns";
@@ -49,7 +50,7 @@ function RouteComponent() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Form state - using FormErrors interface instead of Record<string, string>
-  const [formData, setFormData] = useState<Omit<Contract, "ContractID">>({
+  const [formData, setFormData] = useState<BaseContract>({
     StudentID: 0,
     RoomID: 0,
     StartDate: "",
@@ -61,7 +62,7 @@ function RouteComponent() {
 
   useEffect(() => {
     getContractsByID(contractId).then(setContract).catch(console.error);
-    getRooms().then(setRooms).catch(console.error);
+    //getRooms().then(setRooms).catch(console.error);
   }, [contractId]);
 
   useEffect(() => {

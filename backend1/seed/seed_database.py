@@ -25,10 +25,10 @@ def seed_database():
     try:
         # Seed RoomTypes - keep this small
         room_types = [
-            RoomType(RoomTypeName="Single", RentPrice=450.00),
-            RoomType(RoomTypeName="Double", RentPrice=350.00),
-            RoomType(RoomTypeName="Deluxe", RentPrice=550.00),
-            RoomType(RoomTypeName="Suite", RentPrice=650.00),
+            RoomType(RoomTypeName="Phòng đôi", RentPrice=850.00),
+            RoomType(RoomTypeName="Phòng 4 người", RentPrice=650.00),
+            RoomType(RoomTypeName="Phòng 8 người (không được nấu ăn)", RentPrice=400.00),
+            RoomType(RoomTypeName="Phòng 8 người (được nấu ăn)", RentPrice=450.00),
         ]
         db.add_all(room_types)
         db.flush()  # Flush to get the IDs
@@ -54,18 +54,21 @@ def seed_database():
         db.flush()
         print("Rooms seeded successfully")
 
-        # Seed Students - around 100 records
-        first_names = ["John", "Jane", "Michael", "Emily", "David", "Sarah", "Robert", "Lisa", "James",
-                       "Emma", "William", "Olivia", "Thomas", "Sophia", "Joseph", "Isabella", "Daniel", "Mia",
-                       "Matthew"]
-        last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson", "Moore",
-                      "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Garcia",
-                      "Martinez"]
+        first_male_names = ["Anh", "Huy", "Tuấn", "Minh", "Long", "Sơn", "Bảo", "Khoa", "Khánh"]
+        first_female_names = ["Linh", "Phương", "Thảo", "Mai", "Hằng", "Trang", "Lan", "Ngọc"]
+
+        last_names = ["Nguyễn", "Lê", "Trần", "Hà", "Phạm", "Võ", "Vũ", "Phan", "Trương",
+                      "Bùi", "Đặng", "Châu", "Đỗ", "Ngô", "Dương", "Đinh", "Huỳnh"]
 
         students = []
         for i in range(1, 101):
-            full_name = f"{random.choice(first_names)} {random.choice(last_names)}"
             gender = random.choice(["Male", "Female"])
+            if gender == "Male":
+                first_name = random.choice(first_male_names)
+            else:
+                first_name = random.choice(first_female_names)
+            last_name = random.choice(last_names)
+            full_name = f"{last_name} {first_name}"
             phone_number = f"{random.randint(100, 999)}{random.randint(100, 999)}{random.randint(1000, 9999)}"
 
             students.append(Student(

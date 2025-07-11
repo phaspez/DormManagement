@@ -546,6 +546,7 @@ export default function ServiceUsageManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Usage ID</TableHead>
                     <TableHead>Contract ID</TableHead>
                     <TableHead>Service Name</TableHead>
                     <TableHead>Quantity</TableHead>
@@ -556,6 +557,7 @@ export default function ServiceUsageManagement() {
                 <TableBody>
                   {serviceUsages?.map((usage) => (
                     <TableRow key={usage.ServiceUsageID}>
+                      <TableCell>{usage.ServiceUsageID}</TableCell>
                       <TableCell>{usage.ContractID}</TableCell>
                       <TableCell>
                         {

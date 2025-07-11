@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Contract } from "~/fetch/contract";
+import { BaseContract, Contract } from "~/fetch/contract";
+import { searchRooms, RoomSearchResult } from "~/fetch/room";
 import { Room } from "~/fetch/room";
 import { cn } from "~/lib/utils";
 
@@ -14,13 +15,6 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { Separator } from "~/components/ui/separator";
 import {
   Popover,
@@ -28,7 +22,23 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { Calendar } from "~/components/ui/calendar";
-import { Edit, FileText, CalendarIcon, X, Plus } from "lucide-react";
+import {
+  Edit,
+  FileText,
+  CalendarIcon,
+  X,
+  Plus,
+  SearchIcon,
+  CheckIcon,
+} from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "~/components/ui/command";
 
 interface FormErrors {
   StudentID?: string;
@@ -42,10 +52,8 @@ interface ContractFormDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: () => void;
   isLoading: boolean;
-  formData: Omit<Contract, "ContractID">;
-  setFormData: React.Dispatch<
-    React.SetStateAction<Omit<Contract, "ContractID">>
-  >;
+  formData: BaseContract;
+  setFormData: React.Dispatch<React.SetStateAction<BaseContract>>;
   errors: FormErrors;
   setErrors: React.Dispatch<React.SetStateAction<FormErrors>>;
   startDate: Date | undefined;
@@ -119,6 +127,48 @@ export default function ContractFormDialog({
     }
   };
 
+  // State for room search
+  const [roomSearchInput, setRoomSearchInput] = useState("");
+  const [roomSearchResults, setRoomSearchResults] = useState<
+    RoomSearchResult[]
+  >([]);
+  const [roomSearchLoading, setRoomSearchLoading] = useState(false);
+  const [roomPopoverOpen, setRoomPopoverOpen] = useState(false);
+  const [selectedRoomNumber, setSelectedRoomNumber] = useState("");
+
+  // Effect to search rooms as user types
+  useEffect(() => {
+    let active = true;
+    if (roomSearchInput.length > 0) {
+      setRoomSearchLoading(true);
+      searchRooms(roomSearchInput)
+        .then((results) => {
+          if (active) setRoomSearchResults(results);
+        })
+        .catch(() => {
+          if (active) setRoomSearchResults([]);
+        })
+        .finally(() => {
+          if (active) setRoomSearchLoading(false);
+        });
+    } else {
+      setRoomSearchResults([]);
+    }
+    return () => {
+      active = false;
+    };
+  }, [roomSearchInput]);
+
+  // Effect to set the selected room number when editing a contract
+  useEffect(() => {
+    if (editingContract && formData.RoomID) {
+      const room = rooms.find((r) => r.RoomID === formData.RoomID);
+      if (room) {
+        setSelectedRoomNumber(room.RoomNumber);
+      }
+    }
+  }, [editingContract, formData.RoomID, rooms]);
+
   // Default trigger button if not provided
   const defaultTriggerButton = (
     <Button
@@ -177,28 +227,65 @@ export default function ContractFormDialog({
 
             <div className="space-y-2">
               <Label htmlFor="roomId">Room</Label>
-              <Select
-                value={formData.RoomID > 0 ? formData.RoomID.toString() : ""}
-                onValueChange={(value) =>
-                  handleInputChange("RoomID", parseInt(value))
-                }
-              >
-                <SelectTrigger
-                  className={errors.RoomID ? "border-destructive" : ""}
-                >
-                  <SelectValue placeholder="Select room" />
-                </SelectTrigger>
-                <SelectContent>
-                  {rooms?.map((room) => (
-                    <SelectItem
-                      key={room.RoomID}
-                      value={room.RoomID.toString()}
-                    >
-                      {room.RoomNumber}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={roomPopoverOpen} onOpenChange={setRoomPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={roomPopoverOpen}
+                    className={cn(
+                      "w-full justify-between",
+                      errors.RoomID && "border-destructive",
+                      !selectedRoomNumber && "text-muted-foreground",
+                    )}
+                  >
+                    {selectedRoomNumber || "Search for a room..."}
+                    <SearchIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search room number..."
+                      value={roomSearchInput}
+                      onValueChange={setRoomSearchInput}
+                    />
+                    <CommandList>
+                      {roomSearchLoading ? (
+                        <CommandEmpty>Searching rooms...</CommandEmpty>
+                      ) : (
+                        <>
+                          {roomSearchResults.length === 0 && (
+                            <CommandEmpty>No rooms found.</CommandEmpty>
+                          )}
+                          <CommandGroup>
+                            {roomSearchResults.map((room) => (
+                              <CommandItem
+                                key={room.RoomID}
+                                value={room.RoomNumber}
+                                onSelect={() => {
+                                  handleInputChange("RoomID", room.RoomID);
+                                  setSelectedRoomNumber(room.RoomNumber);
+                                  setRoomSearchInput("");
+                                  setRoomPopoverOpen(false);
+                                }}
+                              >
+                                <span>{room.RoomNumber}</span>
+                                <span className="ml-2 text-muted-foreground">
+                                  ID: {room.RoomID}
+                                </span>
+                                {formData.RoomID === room.RoomID && (
+                                  <CheckIcon className="ml-auto h-4 w-4" />
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               {errors.RoomID && (
                 <p className="text-sm text-destructive">{errors.RoomID}</p>
               )}

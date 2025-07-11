@@ -2,11 +2,15 @@ import { handleResponse } from "~/fetch/utils";
 import { ServiceUsageWithName } from "~/fetch/serviceUsage";
 import { Paginated } from "~/fetch/utils";
 
-export interface Contract {
+export interface BaseContract {
   StudentID: number;
   RoomID: number;
   StartDate: string;
   EndDate: string;
+}
+
+export interface Contract extends BaseContract {
+  RoomNumber: string;
   ContractID: string;
 }
 
@@ -59,7 +63,7 @@ export async function getContractsByID(contractID: string) {
   }
 }
 
-export async function postContract(contract: Omit<Contract, "ContractID">) {
+export async function postContract(contract: BaseContract) {
   try {
     const response = await fetch(
       import.meta.env.VITE_BACKEND_URL + "/contracts",
@@ -81,7 +85,7 @@ export async function postContract(contract: Omit<Contract, "ContractID">) {
   }
 }
 
-export async function putContract(contract: Contract) {
+export async function putContract(contract: Omit<Contract, "RoomNumber">) {
   try {
     const response = await fetch(
       import.meta.env.VITE_BACKEND_URL + `/contracts/${contract.ContractID}`,
@@ -90,7 +94,7 @@ export async function putContract(contract: Contract) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(contract as Omit<Contract, "ContractID">),
+        body: JSON.stringify(contract as BaseContract),
       },
     );
 
@@ -114,7 +118,7 @@ export async function deleteContract(contractID: string) {
 
     const data = await handleResponse(response);
     console.log(data);
-    return data as Contract;
+    return data as Omit<Contract, "RoomNumber">;
   } catch (error) {
     console.error("Error deleting contract:", error);
     throw error;

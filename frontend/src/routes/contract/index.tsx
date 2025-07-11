@@ -6,6 +6,7 @@ import {
   postContract,
   putContract,
   Contract,
+  BaseContract,
 } from "~/fetch/contract";
 import { Paginated } from "~/fetch/utils";
 import { getRooms } from "~/fetch/room";
@@ -85,12 +86,6 @@ export default function ContractManagement() {
   const contracts: Contract[] = contractsData.items;
   const total = contractsData.total;
 
-  // Fetch rooms for dropdown selection
-  const { data: rooms, isLoading: isLoadingRooms } = useQuery({
-    queryFn: getRooms,
-    queryKey: ["rooms"],
-  });
-
   // State to store student names
   const [studentNames, setStudentNames] = useState<Record<number, string>>({});
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
@@ -161,7 +156,7 @@ export default function ContractManagement() {
   });
 
   // State for form inputs
-  const [formData, setFormData] = useState<Omit<Contract, "ContractID">>({
+  const [formData, setFormData] = useState<BaseContract>({
     StudentID: 0,
     RoomID: 0,
     StartDate: "",
@@ -174,12 +169,6 @@ export default function ContractManagement() {
   // Date picker states
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-
-  // Find room number by ID
-  const getRoomNumber = (roomId: number) => {
-    const room = rooms?.find((r) => r.RoomID === roomId);
-    return room ? room.RoomNumber : `Unknown`;
-  };
 
   const resetForm = () => {
     setFormData({ StudentID: 0, RoomID: 0, StartDate: "", EndDate: "" });
@@ -236,7 +225,7 @@ export default function ContractManagement() {
     console.log("Pagination state changed: page", page, "limit", limit);
   }, [page, limit]);
 
-  if (isLoading || isLoadingRooms) {
+  if (isLoading) {
     return (
       <div className="w-full">
         <Header breadcrumbs={[{ name: "Invoices", url: "/invoice" }]} />
@@ -305,7 +294,7 @@ export default function ContractManagement() {
               setStartDate={setStartDate}
               endDate={endDate}
               setEndDate={setEndDate}
-              rooms={rooms}
+              //rooms={roomItems}
               editingContract={editingContract}
               resetForm={resetForm}
             />
@@ -379,7 +368,7 @@ export default function ContractManagement() {
                           getStudentName(contract.StudentID)
                         )}
                       </TableCell>
-                      <TableCell>{getRoomNumber(contract.RoomID)}</TableCell>
+                      <TableCell>{contract.RoomNumber}</TableCell>
                       <TableCell>{formatDate(contract.StartDate)}</TableCell>
                       <TableCell>{formatDate(contract.EndDate)}</TableCell>
                       <TableCell className="text-right">

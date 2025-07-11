@@ -73,3 +73,17 @@ def get_room_details_by_id(db: Session, room_id: int):
 
 def get_rooms(db: Session):
     return db.query(Room).all()
+
+def get_rooms_with_count(db: Session, skip: int = 0, limit: int = 20):
+    total = db.query(Room).count()
+    rooms = db.query(Room).offset(skip).limit(limit).all()
+    return rooms, total
+
+def search_rooms_by_number(db: Session, room_number: str):
+    """Search for rooms by room number (partial match)"""
+    query = db.query(Room.RoomID, Room.RoomNumber)
+    
+    if room_number:
+        query = query.filter(Room.RoomNumber.ilike(f"%{room_number}%"))
+        
+    return query.all()

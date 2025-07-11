@@ -1,5 +1,6 @@
 from datetime import date
 from pydantic import BaseModel
+from schemas.helper import PaginatedResponse
 
 class RoomCreate(BaseModel):
     RoomTypeID: int
@@ -22,3 +23,13 @@ class StudentsInRoom(BaseModel):
 class RoomDetailsOut(RoomCreate):
     RoomID: int
     Students: list[StudentsInRoom]
+
+class PaginatedRoomResponse(PaginatedResponse[RoomOut]):
+    pass
+
+class RoomSearchResult(BaseModel):
+    RoomID: int
+    RoomNumber: str
+
+    class Config:
+        orm_mode = True

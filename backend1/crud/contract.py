@@ -20,10 +20,33 @@ def get_contract_by_id(db: Session, contract_id: int):
 def get_contracts(db: Session, skip: int = 0, limit: int = 20):
     return db.query(Contract).offset(skip).limit(limit).all()
 
+# def get_contracts_with_count(db: Session, skip: int = 0, limit: int = 20):
+#     total = db.query(Contract).count()
+#     contracts = db.query(Contract).offset(skip).limit(limit).all()
+#     return contracts, total
+
 def get_contracts_with_count(db: Session, skip: int = 0, limit: int = 20):
     total = db.query(Contract).count()
-    contracts = db.query(Contract).offset(skip).limit(limit).all()
-    return contracts, total
+
+    # Query with join to get room number
+    contracts = db.query(Contract, Room.RoomNumber).join(
+        Room, Contract.RoomID == Room.RoomID
+    ).offset(skip).limit(limit).all()
+
+    # Transform the results to include room number
+    result_contracts = []
+    for contract, room_number in contracts:
+        contract_dict = {
+            "ContractID": contract.ContractID,
+            "StudentID": contract.StudentID,
+            "RoomID": contract.RoomID,
+            "StartDate": contract.StartDate,
+            "EndDate": contract.EndDate,
+            "RoomNumber": room_number
+        }
+        result_contracts.append(contract_dict)
+
+    return result_contracts, total
 
 def update_contract(db: Session, contract_id: int, contract: ContractCreate):
     db_contract = get_contract_by_id(db, contract_id)

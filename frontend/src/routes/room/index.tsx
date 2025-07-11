@@ -38,12 +38,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, MonitorCog, Hotel, Info } from "lucide-react";
+import {
+  Trash2,
+  Edit,
+  Plus,
+  X,
+  MonitorCog,
+  Hotel,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import RoomTypeManagement from "~/routes/roomtype";
 import { getRoomTypes, RoomType } from "~/fetch/roomType";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "~/components/ui/pagination";
+import { Paginated } from "~/fetch/utils";
 
 export const Route = createFileRoute("/room/")({
   component: RoomManagement,
@@ -58,15 +74,31 @@ interface FormErrors {
 export default function RoomManagement() {
   const queryClient = useQueryClient();
 
-  // Fetch rooms
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Fetch rooms with pagination
   const {
-    data: rooms,
+    data: roomsDataRaw,
     isLoading,
     isError,
   } = useQuery({
-    queryFn: getRooms,
-    queryKey: ["rooms"],
+    queryFn: () => getRooms(page, limit),
+    queryKey: ["rooms", page, limit],
   });
+
+  // Type guard for roomsData
+  const roomsData: Paginated<Room> =
+    roomsDataRaw &&
+    typeof roomsDataRaw === "object" &&
+    "items" in roomsDataRaw &&
+    "total" in roomsDataRaw
+      ? (roomsDataRaw as Paginated<Room>)
+      : { items: [], total: 0, page: 1, size: limit, pages: 0 };
+
+  const rooms: Room[] = roomsData.items;
+  const total = roomsData.total;
 
   const { data: roomTypes, isLoading: isLoadingRoomTypes } = useQuery({
     queryFn: getRoomTypes,
@@ -201,7 +233,7 @@ export default function RoomManagement() {
   if (isLoading || isLoadingRoomTypes) {
     return (
       <div className="w-full">
-        <Header breadcrumbs={[{ name: "Invoices", url: "/invoice" }]} />
+        <Header breadcrumbs={[{ name: "Rooms", url: "/room" }]} />
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -432,10 +464,40 @@ export default function RoomManagement() {
       {/* Room List */}
       <Card>
         <CardHeader>
-          <CardTitle>Rooms ({rooms?.length || 0})</CardTitle>
+          <CardTitle>Rooms ({total})</CardTitle>
         </CardHeader>
         <CardContent>
-          {rooms?.length === 0 ? (
+          <div className="flex items-center justify-between mb-2">
+            <div />
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="page-size"
+                className="text-sm text-muted-foreground"
+              >
+                Rows per page:
+              </label>
+              <Select
+                value={limit.toString()}
+                onValueChange={(val) => {
+                  const newLimit = Number(val);
+                  setLimit(newLimit);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-20 h-8" id="page-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[5, 10, 20, 50].map((size) => (
+                    <SelectItem key={size} value={size.toString()}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {rooms.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No rooms found. Create your first room to get started.
             </div>
@@ -452,7 +514,7 @@ export default function RoomManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rooms?.map((room) => (
+                  {rooms.map((room: Room) => (
                     <TableRow key={room.RoomID}>
                       <TableCell className="font-medium">
                         {room.RoomNumber}
@@ -501,6 +563,51 @@ export default function RoomManagement() {
               </Table>
             </div>
           )}
+
+          {/* Pagination Controls */}
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                    }}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+                {Array.from({ length: Math.ceil(total / limit) }, (_, i) => (
+                  <PaginationItem key={i}>
+                    <Button
+                      variant={page === i + 1 ? "outline" : "ghost"}
+                      size="icon"
+                      onClick={() => {
+                        setPage(i + 1);
+                      }}
+                    >
+                      {i + 1}
+                    </Button>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setPage((p) => Math.min(Math.ceil(total / limit), p + 1));
+                    }}
+                    disabled={page === Math.ceil(total / limit) || total === 0}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </CardContent>
       </Card>
     </div>
