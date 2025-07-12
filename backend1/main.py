@@ -3,10 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base
 from routers import room, roomtype, contract, student, invoice, service, serviceusage, auth
-
+from init_triggers import initialize_triggers
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+initialize_triggers()
 
 origins = [
     "http://localhost",
