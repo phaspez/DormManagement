@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
 
 from crud.contract import get_contracts_by_room
 from models.contract import Contract
@@ -30,7 +31,13 @@ def delete_room(db: Session, room_id: int):
     return db_room
 
 def get_room_by_id(db: Session, room_id: int):
-    return db.query(Room).filter(Room.RoomID == room_id).first()
+    room = db.query(Room).filter(Room.RoomID == room_id).first()
+    if not room:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Room not found"
+        )
+    return room
 
 
 def get_room_details_by_id(db: Session, room_id: int):
@@ -38,7 +45,10 @@ def get_room_details_by_id(db: Session, room_id: int):
     room = db.query(Room).filter(Room.RoomID == room_id).first()
 
     if not room:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Room not found"
+        )
 
     # Get contracts associated with this room
     contracts = db.query(

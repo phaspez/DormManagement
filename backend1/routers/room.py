@@ -6,6 +6,7 @@ from typing import List
 from database import SessionLocal
 from crud import room as crud_room
 from schemas.room import RoomCreate, RoomOut, RoomDetailsOut, PaginatedRoomResponse, RoomSearchResult
+from utils.room_triggers import get_room_occupancy_info, update_all_room_statuses, create_room_triggers
 
 router = APIRouter(
     prefix="/rooms",
@@ -43,17 +44,27 @@ def read_rooms_paginated(
 def update_room(room_id: int, room: RoomCreate, db: Session = Depends(get_db)):
     return crud_room.update_room(db, room_id, room)
 
+@router.get("/{room_id}", response_model=RoomOut)
+def get_room_by_id(room_id: int, db: Session = Depends(get_db)):
+    try:
+        return crud_room.get_room_by_id(db, room_id)
+    except Exception as e:
+        print(f"Error getting room by ID {room_id}: {e}")
+        raise
+
+
 @router.get("/{room_id}/details", response_model=RoomDetailsOut)
 def get_room_details(room_id: int, db: Session = Depends(get_db)):
-    return crud_room.get_room_details_by_id(db, room_id)
+    try:
+        return crud_room.get_room_details_by_id(db, room_id)
+    except Exception as e:
+        print(f"Error getting room details for ID {room_id}: {e}")
+        raise
 
 @router.delete("/{room_id}", response_model=RoomOut)
 def delete_room(room_id: int, db: Session = Depends(get_db)):
     return crud_room.delete_room(db, room_id)
 
-@router.get("/{room_id}", response_model=RoomOut)
-def get_room_by_id(room_id: int, db: Session = Depends(get_db)):
-    return crud_room.get_room_by_id(db, room_id)
 
 @router.get("/search/by-number", response_model=List[RoomSearchResult])
 def search_rooms_by_number(
@@ -62,3 +73,36 @@ def search_rooms_by_number(
 ):
     """Search for rooms by room number and return just ID and room number"""
     return crud_room.search_rooms_by_number(db, room_number)
+
+@router.get("/search/by-number", response_model=List[RoomSearchResult])
+def search_rooms_by_number(
+    room_number: str = Query("", description="Room number to search for (partial match)"),
+    db: Session = Depends(get_db)
+):
+    """Search for rooms by room number and return just ID and room number"""
+    return crud_room.search_rooms_by_number(db, room_number)
+
+@router.get("/search/by-number", response_model=List[RoomSearchResult])
+def search_rooms_by_number(
+    room_number: str = Query("", description="Room number to search for (partial match)"),
+    db: Session = Depends(get_db)
+):
+    """Search for rooms by room number and return just ID and room number"""
+    return crud_room.search_rooms_by_number(db, room_number)
+
+@router.get("/{room_id}/occupancy")
+def get_room_occupancy(room_id: int, db: Session = Depends(get_db)):
+    """Get detailed occupancy information for a specific room"""
+    return get_room_occupancy_info(db, room_id)
+
+@router.post("/update-all-statuses")
+def update_room_statuses(db: Session = Depends(get_db)):
+    """Manually update all room statuses based on current occupancy"""
+    update_all_room_statuses(db)
+    return {"message": "All room statuses updated successfully"}
+
+@router.post("/setup-triggers")
+def setup_room_triggers(db: Session = Depends(get_db)):
+    """Create database triggers for automatic room status management"""
+    create_room_triggers(db)
+    return {"message": "Room triggers created successfully"}
