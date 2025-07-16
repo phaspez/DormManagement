@@ -80,7 +80,7 @@ export async function postContract(contract: BaseContract) {
     console.log(data);
     return data as Contract;
   } catch (error) {
-    console.error("Error creating contract:", error);
+    console.log(error);
     throw error;
   }
 }

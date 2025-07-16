@@ -150,23 +150,23 @@ const RoomFormDialog: React.FC<RoomFormDialogProps> = ({
               <p className="text-sm text-destructive">{errors.MaxOccupancy}</p>
             )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={formData.Status}
-              onValueChange={(value) =>
-                handleInputChange("Status", value as RoomStatus)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Available">Available</SelectItem>
-                <SelectItem value="Full">Full</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/*<div className="space-y-2">*/}
+          {/*  <Label htmlFor="status">Status</Label>*/}
+          {/*  <Select*/}
+          {/*    value={formData.Status}*/}
+          {/*    onValueChange={(value) =>*/}
+          {/*      handleInputChange("Status", value as RoomStatus)*/}
+          {/*    }*/}
+          {/*  >*/}
+          {/*    <SelectTrigger>*/}
+          {/*      <SelectValue placeholder="Select status" />*/}
+          {/*    </SelectTrigger>*/}
+          {/*    <SelectContent>*/}
+          {/*      <SelectItem value="Available">Available</SelectItem>*/}
+          {/*      <SelectItem value="Full">Full</SelectItem>*/}
+          {/*    </SelectContent>*/}
+          {/*  </Select>*/}
+          {/*</div>*/}
         </div>
         <Separator />
         <div className="flex gap-2">

@@ -201,3 +201,33 @@ def update_all_room_statuses(db: Session):
     
     db.commit()
     print("All room statuses updated successfully")
+
+
+def update_room_status_after_orm_change(db: Session, room_id: int):
+    """
+    Manually update room status after ORM operations
+    to compensate for triggers not firing during ORM updates.
+    """
+    # Get the room
+    room = db.query(Room).filter(Room.RoomID == room_id).first()
+    if not room:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Room not found"
+        )
+
+    # Count active contracts
+    active_contracts = db.query(Contract).filter(
+        Contract.RoomID == room_id,
+        Contract.StartDate <= text('CURDATE()'),
+        Contract.EndDate >= text('CURDATE()')
+    ).count()
+
+    # Update status based on occupancy
+    if active_contracts >= room.MaxOccupancy:
+        room.Status = 'Full'
+    else:
+        room.Status = 'Available'
+
+    # No need to commit here as this would typically be called
+    # within a transaction that will be committed by the caller

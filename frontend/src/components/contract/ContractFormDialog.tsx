@@ -190,6 +190,13 @@ export default function ContractFormDialog({
     </Button>
   );
 
+  // Check if all required fields are filled
+  const isFormValid =
+    !!formData.StudentID &&
+    !!formData.RoomID &&
+    !!formData.StartDate &&
+    !!formData.EndDate;
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
@@ -243,14 +250,26 @@ export default function ContractFormDialog({
                     <SearchIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
+                <PopoverContent
+                  className="w-full p-0"
+                  side="bottom"
+                  align="start"
+                  sideOffset={4}
+                  avoidCollisions={true}
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                  onCloseAutoFocus={(e) => e.preventDefault()}
+                  style={{
+                    maxHeight: "200px",
+                    width: "var(--radix-popover-trigger-width)",
+                  }}
+                >
                   <Command>
                     <CommandInput
                       placeholder="Search room number..."
                       value={roomSearchInput}
                       onValueChange={setRoomSearchInput}
                     />
-                    <CommandList>
+                    <CommandList className="max-h-[150px] overflow-y-auto">
                       {roomSearchLoading ? (
                         <CommandEmpty>Searching rooms...</CommandEmpty>
                       ) : (
@@ -263,12 +282,13 @@ export default function ContractFormDialog({
                               <CommandItem
                                 key={room.RoomID}
                                 value={room.RoomNumber}
-                                onSelect={() => {
+                                onSelect={(value) => {
                                   handleInputChange("RoomID", room.RoomID);
                                   setSelectedRoomNumber(room.RoomNumber);
                                   setRoomSearchInput("");
                                   setRoomPopoverOpen(false);
                                 }}
+                                className="w-full"
                               >
                                 <span>{room.RoomNumber}</span>
                                 <span className="ml-2 text-muted-foreground">
@@ -364,7 +384,11 @@ export default function ContractFormDialog({
           <Separator />
 
           <div className="flex gap-2">
-            <Button onClick={onSubmit} disabled={isLoading} className="flex-1">
+            <Button
+              onClick={onSubmit}
+              disabled={isLoading || !isFormValid}
+              className="flex-1"
+            >
               {editingContract ? "Update Contract" : "Create Contract"}
             </Button>
             <Button

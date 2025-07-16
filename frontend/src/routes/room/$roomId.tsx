@@ -263,7 +263,7 @@ function RouteComponent() {
               <p className="text-sm">{room.MaxOccupancy}</p>
 
               <p className="text-sm font-medium">Status:</p>
-              <p className="text-sm">
+              <div className="text-sm">
                 <Badge
                   variant={
                     room.Status === "Available" ? "default" : "secondary"
@@ -276,7 +276,7 @@ function RouteComponent() {
                 >
                   {room.Status}
                 </Badge>
-              </p>
+              </div>
             </div>
           </CardContent>
         </Card>

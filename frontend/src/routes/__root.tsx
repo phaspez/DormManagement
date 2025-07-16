@@ -116,7 +116,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <div className="w-full px-12 py-4">{children}</div>
             </SidebarInset>
           </SidebarProvider>
-          <Toaster />
+          <Toaster richColors />
         </ThemeProvider>
         <TanStackRouterDevtools position="bottom-right" />
         <ReactQueryDevtools buttonPosition="bottom-right" />

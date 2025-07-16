@@ -35,6 +35,7 @@ import {
   SelectItem,
 } from "~/components/ui/select";
 import { PaginationNav } from "~/components/ui/pagination-nav";
+import { toast } from "sonner";
 
 interface FormErrors {
   StudentID?: string;
@@ -124,6 +125,9 @@ export default function ContractManagement() {
       queryClient.invalidateQueries({ queryKey: ["contracts"] });
       resetForm();
     },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
 
   const updateContractMutation = useMutation({
@@ -131,6 +135,9 @@ export default function ContractManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contracts"] });
       resetForm();
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

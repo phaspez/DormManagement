@@ -6,10 +6,11 @@ class RoomCreate(BaseModel):
     RoomTypeID: int
     RoomNumber: str
     MaxOccupancy: int
-    Status: str
+    #Status: str
 
 class RoomOut(RoomCreate):
     RoomID: int
+    Status: str
 
     class Config:
         orm_mode = True
@@ -22,6 +23,7 @@ class StudentsInRoom(BaseModel):
 
 class RoomDetailsOut(RoomCreate):
     RoomID: int
+    Status: str
     Students: list[StudentsInRoom]
 
 class PaginatedRoomResponse(PaginatedResponse[RoomOut]):

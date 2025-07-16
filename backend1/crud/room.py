@@ -6,9 +6,11 @@ from models.contract import Contract
 from models.room import Room
 from models.student import Student
 from schemas.room import RoomCreate
+from utils.room_triggers import update_room_status_after_orm_change
+
 
 def create_room(db: Session, room: RoomCreate):
-    db_room = Room(RoomTypeID=room.RoomTypeID, RoomNumber=room.RoomNumber, MaxOccupancy=room.MaxOccupancy, Status=room.Status)
+    db_room = Room(RoomTypeID=room.RoomTypeID, RoomNumber=room.RoomNumber, MaxOccupancy=room.MaxOccupancy, Status="Available")
     db.add(db_room)
     db.commit()
     db.refresh(db_room)
@@ -19,9 +21,10 @@ def update_room(db: Session, room_id: int, room: RoomCreate):
     db_room.RoomTypeID = room.RoomTypeID
     db_room.RoomNumber = room.RoomNumber
     db_room.MaxOccupancy = room.MaxOccupancy
-    db_room.Status = room.Status
+    #db_room.Status = room.Status
     db.commit()
     db.refresh(db_room)
+    update_room_status_after_orm_change(db, room_id)
     return db_room
 
 def delete_room(db: Session, room_id: int):
