@@ -174,15 +174,8 @@ export default function ContractFormDialog({
     <Button
       className="flex items-center gap-2"
       onClick={() => {
-        setFormData({
-          StudentID: 0,
-          RoomID: 0,
-          StartDate: "",
-          EndDate: "",
-        });
-        setErrors({});
-        setStartDate(undefined);
-        setEndDate(undefined);
+        // Reset form and clear editing state
+        resetForm();
       }}
     >
       <Plus className="h-4 w-4" />

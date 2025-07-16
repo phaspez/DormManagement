@@ -1,11 +1,17 @@
 import { handleResponse, Paginated } from "~/fetch/utils";
 
-export interface Invoice {
+export interface BaseInvoice {
   ServiceUsageID: number;
   CreatedDate: string;
   DueDate: string;
-  TotalAmount: number;
+}
+
+export interface InvoiceEdit extends BaseInvoice {
   InvoiceID: number;
+}
+
+export interface Invoice extends InvoiceEdit {
+  TotalAmount: number;
 }
 
 export async function getInvoices(page: number = 1, size: number = 20) {
@@ -48,7 +54,7 @@ export async function getInvoiceByID(invoiceID: number) {
   }
 }
 
-export async function postInvoice(invoice: Omit<Invoice, "InvoiceID">) {
+export async function postInvoice(invoice: BaseInvoice) {
   try {
     const response = await fetch(
       import.meta.env.VITE_BACKEND_URL + "/invoices",
@@ -70,7 +76,7 @@ export async function postInvoice(invoice: Omit<Invoice, "InvoiceID">) {
   }
 }
 
-export async function putInvoice(invoice: Invoice) {
+export async function putInvoice(invoice: InvoiceEdit) {
   try {
     const response = await fetch(
       import.meta.env.VITE_BACKEND_URL + `/invoices/${invoice.InvoiceID}`,
@@ -79,7 +85,7 @@ export async function putInvoice(invoice: Invoice) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(invoice as Omit<Invoice, "InvoiceID">),
+        body: JSON.stringify(invoice as Omit<InvoiceEdit, "InvoiceID">),
       },
     );
 

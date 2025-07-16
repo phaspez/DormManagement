@@ -1,8 +1,12 @@
+from datetime import date
+
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from models.room import Room
 from models.contract import Contract
 from fastapi import HTTPException, status
+from models.student import Student
+
 
 def create_room_triggers(db: Session):
     """Create triggers for automatic room status management"""
@@ -231,3 +235,53 @@ def update_room_status_after_orm_change(db: Session, room_id: int):
 
     # No need to commit here as this would typically be called
     # within a transaction that will be committed by the caller
+
+
+def get_room_occupancy_info(db: Session, room_id: int):
+    """
+    Get detailed occupancy information for a room, including current students
+    with active contracts
+    """
+    # Get the room details
+    room = db.query(Room).filter(Room.RoomID == room_id).first()
+    if not room:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Room not found"
+        )
+
+    # Get active contracts for this room
+    today = date.today()
+    active_contracts = db.query(
+        Contract, Student
+    ).join(
+        Student, Contract.StudentID == Student.StudentID
+    ).filter(
+        Contract.RoomID == room_id,
+        Contract.StartDate <= today,
+        Contract.EndDate >= today
+    ).all()
+
+    # Count active contracts
+    current_occupancy = len(active_contracts)
+
+    # Prepare student information from active contracts
+    active_students = [
+        {
+            "StudentID": student.StudentID,
+            "FullName": student.FullName,
+            "StartDate": contract.StartDate,
+            "EndDate": contract.EndDate
+        } for contract, student in active_contracts
+    ]
+
+    return {
+        "RoomID": room.RoomID,
+        "RoomTypeID": room.RoomTypeID,
+        "RoomNumber": room.RoomNumber,
+        "MaxOccupancy": room.MaxOccupancy,
+        "CurrentOccupancy": current_occupancy,
+        "AvailableSpots": room.MaxOccupancy - current_occupancy,
+        "Status": room.Status,
+        "Students": active_students
+    }

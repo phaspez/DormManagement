@@ -11,33 +11,21 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { CalendarIcon, Edit, HomeIcon, UsersIcon } from "lucide-react";
+import { Edit, HomeIcon, UsersIcon } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
 import RoomFormDialog from "~/components/room/RoomFormDialog";
 import { getRoomTypes } from "~/fetch/roomType";
 import { useMutation } from "@tanstack/react-query";
+import { Progress } from "~/components/ui/progress";
 
 export const Route = createFileRoute("/room/$roomId")({
   component: RouteComponent,
 });
 
-// Update the RoomDetails interface to reflect that Students is an array
-interface Student {
-  StudentID: number;
-  FullName: string;
-  StartDate: string;
-  EndDate: string;
-}
-
-// Override the RoomDetails type locally to ensure Students is treated as an array
-interface RoomDetailsWithStudents extends Room {
-  Students: Student[];
-}
-
 function RouteComponent() {
   const { roomId } = Route.useParams();
-  const [room, setRoom] = useState<RoomDetailsWithStudents | null>(null);
+  const [room, setRoom] = useState<RoomDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -65,7 +53,7 @@ function RouteComponent() {
         setRoom({
           ...roomData,
           Students: students,
-        } as RoomDetailsWithStudents);
+        } as RoomDetails);
         // Pre-fill formData for editing
         setFormData({
           RoomTypeID: roomData.RoomTypeID,
@@ -259,8 +247,15 @@ function RouteComponent() {
               <p className="text-sm font-medium">Room Type ID:</p>
               <p className="text-sm">{room.RoomTypeID}</p>
 
-              <p className="text-sm font-medium">Max Occupancy:</p>
-              <p className="text-sm">{room.MaxOccupancy}</p>
+              <p className="text-sm font-medium">Occupancy:</p>
+              <span className="flex items-center gap-2">
+                <p className="text-sm min-w-max">
+                  {room.CurrentOccupancy} / {room.MaxOccupancy}
+                </p>
+                <Progress
+                  value={(room.CurrentOccupancy / room.MaxOccupancy) * 100}
+                />
+              </span>
 
               <p className="text-sm font-medium">Status:</p>
               <div className="text-sm">

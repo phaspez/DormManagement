@@ -6,10 +6,11 @@ class InvoiceCreate(BaseModel):
     ServiceUsageID: int
     CreatedDate: date
     DueDate: date
-    TotalAmount: float
+
 
 class InvoiceOut(InvoiceCreate):
     InvoiceID: int
+    TotalAmount: float
 
     class Config:
         orm_mode = True

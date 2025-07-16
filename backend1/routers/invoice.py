@@ -5,6 +5,7 @@ from typing import List
 from database import SessionLocal
 from crud import invoice as crud_invoice
 from schemas.invoice import InvoiceCreate, InvoiceOut, PaginatedInvoiceResponse
+from utils.invoice_triggers import recalculate_invoice_amount, recalculate_all_invoice_amounts
 
 router = APIRouter(
     prefix="/invoices",
@@ -49,3 +50,16 @@ def update_invoice(invoice_id: int, invoice: InvoiceCreate, db: Session = Depend
 @router.delete("/{invoice_id}", response_model=InvoiceOut)
 def delete_invoice(invoice_id: int, db: Session = Depends(get_db)):
     return crud_invoice.delete_invoice(db, invoice_id)
+
+@router.post("/{invoice_id}/recalculate", response_model=InvoiceOut)
+def recalculate_invoice(invoice_id: int, db: Session = Depends(get_db)):
+    invoice = crud_invoice.get_invoice_by_id(db, invoice_id)
+    recalculate_invoice_amount(db, invoice_id)
+    db.commit()
+    db.refresh(invoice)
+    return invoice
+
+@router.post("/recalculate-all", response_model=dict)
+def recalculate_all_invoices(db: Session = Depends(get_db)):
+    recalculate_all_invoice_amounts(db)
+    return {"message": "All invoice amounts recalculated successfully"}

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import Header from "~/components/header";
 import React from "react";
-import RoomManagement from "~/routes/room/RoomManagement";
+import RoomManagement from "~/components/room/RoomManagement";
 
 export const Route = createFileRoute("/room/")({
   component: RouteComponent,

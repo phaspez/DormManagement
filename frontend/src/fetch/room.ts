@@ -14,12 +14,14 @@ export interface Room {
 }
 
 export interface RoomDetails extends Room {
+  CurrentOccupancy: number;
+  AvailableSpots: number;
   Students: {
     StudentID: number;
     FullName: string;
     StartDate: string;
     EndDate: string;
-  };
+  }[];
 }
 
 export interface RoomSearchResult {
@@ -52,7 +54,7 @@ export async function getRooms(page: number = 1, size: number = 20) {
 export async function getRoomsByID(roomID: number) {
   try {
     const response = await fetch(
-      import.meta.env.VITE_BACKEND_URL + `/rooms/${roomID}/details`,
+      import.meta.env.VITE_BACKEND_URL + `/rooms/${roomID}/occupancy`,
       {
         method: "GET",
       },

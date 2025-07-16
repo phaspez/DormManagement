@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from models.serviceusage import ServiceUsage
+from models.invoice import Invoice
 from schemas.serviceusage import ServiceUsageCreate
+from utils.invoice_triggers import recalculate_invoice_amount
 
 def create_serviceusage(db: Session, serviceusage: ServiceUsageCreate):
     db_serviceusage = ServiceUsage(ContractID=serviceusage.ContractID, ServiceID=serviceusage.ServiceID, Quantity=serviceusage.Quantity, UsageMonth=serviceusage.UsageMonth, UsageYear=serviceusage.UsageYear)
@@ -28,6 +31,17 @@ def update_serviceusage(db: Session, serviceusage_id: int, serviceusage: Service
     db_serviceusage.Quantity = serviceusage.Quantity
     db_serviceusage.UsageMonth = serviceusage.UsageMonth
     db_serviceusage.UsageYear = serviceusage.UsageYear
+    
+    # Find related invoices and update their amounts
+    related_invoices = db.query(Invoice).filter(Invoice.ServiceUsageID == serviceusage_id).all()
+    
+    # Commit service usage change first
+    db.flush()
+    
+    # Update related invoice amounts
+    for invoice in related_invoices:
+        recalculate_invoice_amount(db, invoice.InvoiceID)
+    
     db.commit()
     db.refresh(db_serviceusage)
     return db_serviceusage

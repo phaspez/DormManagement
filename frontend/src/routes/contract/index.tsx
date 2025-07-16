@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import Header from "~/components/header";
 import React from "react";
-import ContractManagement from "~/routes/contract/ContractManagement";
+import ContractManagement from "~/components/contract/ContractManagement";
 
 export const Route = createFileRoute("/contract/")({
   component: RouteComponent,

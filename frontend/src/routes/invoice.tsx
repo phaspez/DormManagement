@@ -3,10 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Alert, AlertDescription } from "~/components/ui/alert";
-import { Separator } from "~/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -15,14 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, ReceiptText, CalendarIcon } from "lucide-react";
+import { Trash2, Edit, ReceiptText } from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteInvoice,
@@ -31,14 +21,7 @@ import {
   putInvoice,
   Invoice,
 } from "~/fetch/invoice";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { Calendar } from "~/components/ui/calendar";
 import { format } from "date-fns";
-import { cn } from "~/lib/utils";
 import TableSkeleton from "~/components/TableSkeleton";
 import { Skeleton } from "~/components/ui/skeleton";
 import {
@@ -50,6 +33,7 @@ import {
 } from "~/components/ui/select";
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
+import InvoiceFormDialog from "~/components/invoice/InvoiceFormDialog";
 
 export const Route = createFileRoute("/invoice")({
   component: InvoiceManagement,
@@ -59,7 +43,6 @@ interface FormErrors {
   ServiceUsageID?: string;
   CreatedDate?: string;
   DueDate?: string;
-  TotalAmount?: string;
 }
 
 export default function InvoiceManagement() {
@@ -114,13 +97,12 @@ export default function InvoiceManagement() {
   });
 
   // State for form inputs
-  const [formData, setFormData] = useState<Omit<Invoice, "InvoiceID">>({
+  const [formData, setFormData] = useState({
     ServiceUsageID: 0,
     CreatedDate: new Date().toISOString().split("T")[0],
     DueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0],
-    TotalAmount: 0,
   });
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -150,10 +132,6 @@ export default function InvoiceManagement() {
       newErrors.DueDate = "Due date is required";
     } else if (new Date(formData.DueDate) <= new Date(formData.CreatedDate)) {
       newErrors.DueDate = "Due date must be after created date";
-    }
-
-    if (formData.TotalAmount <= 0) {
-      newErrors.TotalAmount = "Total amount must be greater than 0";
     }
 
     setErrors(newErrors);
@@ -211,7 +189,6 @@ export default function InvoiceManagement() {
       ServiceUsageID: 0,
       CreatedDate: today.toISOString().split("T")[0],
       DueDate: thirtyDaysLater.toISOString().split("T")[0],
-      TotalAmount: 0,
     });
     setEditingInvoice(null);
     setErrors({});
@@ -231,7 +208,6 @@ export default function InvoiceManagement() {
       ServiceUsageID: invoice.ServiceUsageID,
       CreatedDate: invoice.CreatedDate.split("T")[0],
       DueDate: invoice.DueDate.split("T")[0],
-      TotalAmount: invoice.TotalAmount,
     });
     setErrors({});
     setIsCreateDialogOpen(true);
@@ -321,191 +297,27 @@ export default function InvoiceManagement() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Dialog
-              open={isCreateDialogOpen}
+            <InvoiceFormDialog
+              isOpen={isCreateDialogOpen}
               onOpenChange={setIsCreateDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  className="flex items-center gap-2"
-                  onClick={() => {
-                    setEditingInvoice(null);
-                    resetForm();
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                  Create New Invoice
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    {editingInvoice ? (
-                      <Edit className="h-5 w-5" />
-                    ) : (
-                      <Plus className="h-5 w-5" />
-                    )}
-                    {editingInvoice ? "Edit Invoice" : "Create New Invoice"}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="serviceUsageID">Service Usage ID</Label>
-                    <Input
-                      id="serviceUsageID"
-                      type="number"
-                      placeholder="Enter service usage ID"
-                      value={formData.ServiceUsageID || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "ServiceUsageID",
-                          parseInt(e.target.value) || 0,
-                        )
-                      }
-                      className={
-                        errors.ServiceUsageID ? "border-destructive" : ""
-                      }
-                    />
-                    {errors.ServiceUsageID && (
-                      <p className="text-sm text-destructive">
-                        {errors.ServiceUsageID}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Created Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !createdDate && "text-muted-foreground",
-                              errors.CreatedDate && "border-destructive",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {createdDate
-                              ? format(createdDate, "PPP")
-                              : "Pick a date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            captionLayout="dropdown"
-                            fromYear={new Date().getFullYear() - 5}
-                            toYear={new Date().getFullYear() + 5}
-                            selected={createdDate}
-                            onSelect={(date) =>
-                              handleDateChange("CreatedDate", date)
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {errors.CreatedDate && (
-                        <p className="text-sm text-destructive">
-                          {errors.CreatedDate}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Due Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !dueDate && "text-muted-foreground",
-                              errors.DueDate && "border-destructive",
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {dueDate ? format(dueDate, "PPP") : "Pick a date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            captionLayout="dropdown"
-                            fromYear={new Date().getFullYear() - 5}
-                            toYear={new Date().getFullYear() + 5}
-                            selected={dueDate}
-                            onSelect={(date) =>
-                              handleDateChange("DueDate", date)
-                            }
-                            initialFocus
-                            disabled={(date) =>
-                              createdDate ? date < createdDate : false
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {errors.DueDate && (
-                        <p className="text-sm text-destructive">
-                          {errors.DueDate}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="totalAmount">Total Amount</Label>
-                    <Input
-                      id="totalAmount"
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter total amount"
-                      value={formData.TotalAmount || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "TotalAmount",
-                          parseFloat(e.target.value) || 0,
-                        )
-                      }
-                      className={errors.TotalAmount ? "border-destructive" : ""}
-                    />
-                    {errors.TotalAmount && (
-                      <p className="text-sm text-destructive">
-                        {errors.TotalAmount}
-                      </p>
-                    )}
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={
-                        editingInvoice
-                          ? handleUpdateInvoice
-                          : handleCreateInvoice
-                      }
-                      disabled={
-                        createInvoiceMutation.isPending ||
-                        updateInvoiceMutation.isPending
-                      }
-                      className="flex-1"
-                    >
-                      {editingInvoice ? "Update Invoice" : "Create Invoice"}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={resetForm}
-                      className="flex items-center gap-2"
-                    >
-                      <X className="h-4 w-4" />
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+              onSubmit={
+                editingInvoice ? handleUpdateInvoice : handleCreateInvoice
+              }
+              isLoading={
+                createInvoiceMutation.isPending ||
+                updateInvoiceMutation.isPending
+              }
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+              setErrors={setErrors}
+              createdDate={createdDate}
+              setCreatedDate={setCreatedDate}
+              dueDate={dueDate}
+              setDueDate={setDueDate}
+              editingInvoice={editingInvoice}
+              resetForm={resetForm}
+            />
           </div>
         </div>
       </div>
