@@ -1,11 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import Header from "~/components/header";
 import React, { useEffect, useState } from "react";
+import ServiceUsageDialog from "~/components/contract/ContractDetailFormDialog";
+import { deleteServiceUsage } from "~/fetch/serviceUsage";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, PlusCircle, Trash } from "lucide-react";
+
 import {
   getContractsByID,
   putContract,
   Contract,
-  ContractDetails,
   BaseContract,
 } from "~/fetch/contract";
 import { Room } from "~/fetch/room";
@@ -38,13 +42,27 @@ interface FormErrors {
   EndDate?: string;
 }
 
+const months = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" },
+];
+
 export const Route = createFileRoute("/contract/$contractId")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { contractId } = Route.useParams();
-  const [contract, setContract] = useState<ContractDetails | null>(null);
   const [rooms, _setRooms] = useState<Room[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,10 +78,18 @@ function RouteComponent() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
-  useEffect(() => {
-    getContractsByID(contractId).then(setContract).catch(console.error);
-    //getRooms().then(setRooms).catch(console.error);
-  }, [contractId]);
+  const queryClient = useQueryClient();
+
+  // Use React Query to fetch contract data
+  const {
+    data: contract,
+    isLoading: isContractLoading,
+    error,
+  } = useQuery({
+    queryKey: ["contracts", contractId],
+    queryFn: () => getContractsByID(contractId),
+    enabled: !!contractId,
+  });
 
   useEffect(() => {
     if (contract) {
@@ -134,13 +160,14 @@ function RouteComponent() {
 
     setIsLoading(true);
     try {
-      const updatedContract = await putContract({
+      await putContract({
         ...formData,
         ContractID: contractId,
       });
 
       toast.success("Contract updated successfully");
-      setContract(await getContractsByID(contractId));
+      // Invalidate the query to refetch data
+      queryClient.invalidateQueries({ queryKey: ["contracts", contractId] });
       setIsDialogOpen(false);
     } catch (error) {
       toast.error("Failed to update contract");
@@ -158,7 +185,24 @@ function RouteComponent() {
     }
   };
 
-  if (!contract) {
+  const deleteServiceUsageMutation = useMutation({
+    mutationFn: deleteServiceUsage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["contracts", contractId] });
+      toast.success("Service usage deleted successfully");
+    },
+    onError: () => {
+      toast.error("Failed to delete service usage");
+    },
+  });
+
+  const handleDeleteServiceUsage = (serviceUsageID: number) => {
+    if (window.confirm("Are you sure you want to delete this service usage?")) {
+      deleteServiceUsageMutation.mutate(serviceUsageID);
+    }
+  };
+
+  if (isContractLoading) {
     return (
       <div className="w-full">
         <Header
@@ -173,6 +217,27 @@ function RouteComponent() {
         <div className="flex justify-center items-center h-64">
           <p className="text-lg text-muted-foreground">
             Loading contract details...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !contract) {
+    return (
+      <div className="w-full">
+        <Header
+          breadcrumbs={[
+            { name: "Contracts", url: "/contract" },
+            {
+              name: `Contract ${contractId}`,
+              url: `/contract/${contractId}`,
+            },
+          ]}
+        />
+        <div className="flex justify-center items-center h-64">
+          <p className="text-lg text-destructive">
+            {error ? "Failed to load contract details" : "Contract not found"}
           </p>
         </div>
       </div>
@@ -295,27 +360,68 @@ function RouteComponent() {
         </Card>
 
         <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Service Usages</CardTitle>
-            <CardDescription>
-              Services included in this contract
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Service Usages</CardTitle>
+              <CardDescription>
+                Services included in this contract
+              </CardDescription>
+            </div>
+            <ServiceUsageDialog
+              contractId={contractId}
+              trigger={
+                <Button className="flex items-center gap-2">
+                  <PlusCircle className="h-4 w-4" />
+                  Add Service
+                </Button>
+              }
+            />
           </CardHeader>
           <CardContent>
             {contract.ServiceUsages && contract.ServiceUsages.length > 0 ? (
               <div className="space-y-4">
-                {contract.ServiceUsages.map((service, index) => (
-                  <div key={index} className="p-3 border rounded-lg">
-                    <div className="flex flex-col gap-1">
-                      <div className="flex gap-2 items-center justify-between">
-                        <h5 className="text-lg font-bold">
-                          {service.ServiceName} x{service.Quantity}
-                        </h5>
-                        <span>ID: {service.ServiceID}</span>
+                {contract.ServiceUsages.map((service) => (
+                  <div
+                    key={service.ServiceUsageID}
+                    className="p-3 border rounded-lg"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex gap-2 items-center justify-between">
+                          <h5 className="text-lg font-bold">
+                            {service.ServiceName} x{service.Quantity}
+                          </h5>
+                          <span>ID: {service.ServiceID}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {
+                            months.find((m) => m.value === service.UsageMonth)
+                              ?.label
+                          }{" "}
+                          {service.UsageYear}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {service.UsageMonth}/{service.UsageYear}
-                      </p>
+                      <div className="flex gap-2">
+                        <ServiceUsageDialog
+                          contractId={contractId}
+                          editingServiceUsage={service}
+                          trigger={
+                            <Button size="sm" variant="outline">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() =>
+                            handleDeleteServiceUsage(service.ServiceUsageID)
+                          }
+                          disabled={deleteServiceUsageMutation.isPending}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
