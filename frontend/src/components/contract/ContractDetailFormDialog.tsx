@@ -193,7 +193,7 @@ export default function ServiceUsageDialog({
       updateServiceUsageMutation.mutate({
         ...editingServiceUsage,
         ...formData,
-        ContractID: parseInt(contractId), // Ensure ContractID is always included
+        ContractID: parseInt(contractId),
       });
     } else {
       createServiceUsageMutation.mutate(formData);
