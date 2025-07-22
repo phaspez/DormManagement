@@ -12,5 +12,6 @@ class Contract(Base):
     EndDate = Column(Date, nullable=False)
 
     # Relationships
-    student = relationship("Student", back_populates="contracts")
-    room = relationship("Room", back_populates="contracts")
+    students = relationship("Student", back_populates="contracts")
+    rooms = relationship("Room", back_populates="contracts")
+    service_usages = relationship("ServiceUsage", back_populates="contracts")

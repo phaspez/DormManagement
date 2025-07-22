@@ -12,5 +12,5 @@ class Room(Base):
     Status = Column(Enum('Available', 'Full', name='room_status'), default='Available')
 
     # Relationships
-    room_type = relationship("RoomType", back_populates="rooms")
-    contracts = relationship("Contract", back_populates="room") 
+    room_types = relationship("RoomType", back_populates="rooms")
+    contracts = relationship("Contract", back_populates="rooms") 

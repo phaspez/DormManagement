@@ -7,6 +7,8 @@ from schemas.helper import PaginatedResponse
 
 class ServiceUsageBase(BaseModel):
     ServiceUsageID: int
+    ContractID: int
+    InvoiceID: int
     ServiceID: int
     ServiceName: str
     Quantity: int

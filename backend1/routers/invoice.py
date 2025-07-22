@@ -43,6 +43,10 @@ def read_invoices_paginated(
 def get_invoice_by_id(invoice_id: int, db: Session = Depends(get_db)):
     return crud_invoice.get_invoice_by_id(db, invoice_id)
 
+@router.get("/{invoice_id}/details", response_model=InvoiceOut)
+def get_invoice_details(invoice_id: int, db: Session = Depends(get_db)):
+    return crud_invoice.get_invoice_by_id_with_details(db, invoice_id)
+
 @router.put("/{invoice_id}", response_model=InvoiceOut)
 def update_invoice(invoice_id: int, invoice: InvoiceCreate, db: Session = Depends(get_db)):
     return crud_invoice.update_invoice(db, invoice_id, invoice)

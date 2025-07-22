@@ -6,7 +6,7 @@ from schemas.serviceusage import ServiceUsageCreate
 from utils.invoice_triggers import recalculate_invoice_amount
 
 def create_serviceusage(db: Session, serviceusage: ServiceUsageCreate):
-    db_serviceusage = ServiceUsage(ContractID=serviceusage.ContractID, ServiceID=serviceusage.ServiceID, Quantity=serviceusage.Quantity, UsageMonth=serviceusage.UsageMonth, UsageYear=serviceusage.UsageYear)
+    db_serviceusage = ServiceUsage(ContractID=serviceusage.ContractID, InvoiceID=serviceusage.InvoiceID, ServiceID=serviceusage.ServiceID, Quantity=serviceusage.Quantity, UsageMonth=serviceusage.UsageMonth, UsageYear=serviceusage.UsageYear)
     db.add(db_serviceusage)
     db.commit()
     db.refresh(db_serviceusage)
@@ -51,3 +51,8 @@ def delete_serviceusage(db: Session, serviceusage_id: int):
     db.delete(db_serviceusage)
     db.commit()
     return db_serviceusage
+
+def delete_all_serviceusages(db: Session):
+    db.query(ServiceUsage).delete()
+    db.commit()
+    return {"message": "All service usages deleted successfully"}

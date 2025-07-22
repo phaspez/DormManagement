@@ -11,5 +11,5 @@ class Student(Base):
     PhoneNumber = Column(String(10), nullable=False)
     
     # Relationships
-    contracts = relationship("Contract", back_populates="student") 
+    contracts = relationship("Contract", back_populates="students") 
 

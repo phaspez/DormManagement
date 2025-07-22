@@ -5,6 +5,8 @@ from models.serviceusage import ServiceUsage
 from models.service import Service
 from fastapi import HTTPException, status
 
+
+# sửa viết tổng thành tiền lại
 def create_invoice_triggers(db: Session):
     """Create triggers for automatic invoice amount calculation"""
     
@@ -114,7 +116,7 @@ def recalculate_invoice_amount(db: Session, invoice_id: int):
     
     # Get service usage details
     service_usage = db.query(ServiceUsage).filter(
-        ServiceUsage.ServiceUsageID == invoice.ServiceUsageID
+        ServiceUsage.InvoiceID == invoice.InvoiceID
     ).first()
     
     if not service_usage:

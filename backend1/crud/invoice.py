@@ -2,10 +2,14 @@ from sqlalchemy.orm import Session
 from models.invoice import Invoice
 from schemas.invoice import InvoiceCreate
 from utils.invoice_triggers import recalculate_invoice_amount
+from models.student import Student
+from models.room import Room
+from models.serviceusage import ServiceUsage
+from models.service import Service
 
 def create_invoice(db: Session, invoice: InvoiceCreate):
     # Create invoice with initial values
-    db_invoice = Invoice(ServiceUsageID=invoice.ServiceUsageID, CreatedDate=invoice.CreatedDate, DueDate=invoice.DueDate, TotalAmount=0)
+    db_invoice = Invoice(CreatedDate=invoice.CreatedDate, DueDate=invoice.DueDate, TotalAmount=0)
     db.add(db_invoice)
     db.flush()  # Flush to get the invoice ID
     
@@ -31,7 +35,6 @@ def update_invoice(db: Session, invoice_id: int, invoice: InvoiceCreate):
     db_invoice = get_invoice_by_id(db, invoice_id)
     
     # Update invoice fields
-    db_invoice.ServiceUsageID = invoice.ServiceUsageID
     db_invoice.CreatedDate = invoice.CreatedDate
     db_invoice.DueDate = invoice.DueDate
     
@@ -47,3 +50,51 @@ def delete_invoice(db: Session, invoice_id: int):
     db.delete(db_invoice)
     db.commit()
     return db_invoice
+
+def get_invoice_by_id_with_details(db: Session, invoice_id: int):
+    result = db.query(
+        Invoice,
+    ).filter(
+        Invoice.InvoiceID == invoice_id
+    ).first()
+
+    if not result:
+        return None
+
+    invoice = result
+
+    # Query service usages
+    service_usages = db.query(
+        ServiceUsage.ServiceUsageID,
+        ServiceUsage.ServiceID,
+        Service.ServiceName,
+        ServiceUsage.Quantity,
+        Service.UnitPrice,
+        ServiceUsage.UsageMonth,
+        ServiceUsage.UsageYear
+    ).join(
+        Service, ServiceUsage.ServiceID == Service.ServiceID
+    ).filter(
+        ServiceUsage.InvoiceID == invoice_id
+    ).all()
+
+    # Create response object
+    response = {
+        "InvoiceID": invoice.InvoiceID,
+        "CreatedDate": invoice.CreatedDate,
+        "DueDate": invoice.DueDate,
+        "TotalAmount": invoice.TotalAmount,
+        "ServiceUsages": [
+            {
+                "ServiceUsageID": su.ServiceUsageID,
+                "ServiceID": su.ServiceID,
+                "ServiceName": su.ServiceName,
+                "Quantity": su.Quantity,
+                "UnitPrice": su.UnitPrice,
+                "UsageMonth": su.UsageMonth,
+                "UsageYear": su.UsageYear
+            } for su in service_usages
+        ]
+    }
+
+    return response

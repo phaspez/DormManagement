@@ -3,7 +3,7 @@ from datetime import date
 from schemas.helper import PaginatedResponse
 
 class InvoiceCreate(BaseModel):
-    ServiceUsageID: int
+    # ServiceUsageID: int
     CreatedDate: date
     DueDate: date
 
