@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import SessionLocal
 from crud import invoice as crud_invoice
-from schemas.invoice import InvoiceCreate, InvoiceOut, PaginatedInvoiceResponse
+from schemas.invoice import InvoiceCreate, InvoiceOut, PaginatedInvoiceResponse, InvoiceDetail
 from utils.invoice_triggers import recalculate_invoice_amount, recalculate_all_invoice_amounts
 
 router = APIRouter(
@@ -43,7 +43,7 @@ def read_invoices_paginated(
 def get_invoice_by_id(invoice_id: int, db: Session = Depends(get_db)):
     return crud_invoice.get_invoice_by_id(db, invoice_id)
 
-@router.get("/{invoice_id}/details", response_model=InvoiceOut)
+@router.get("/{invoice_id}/details")
 def get_invoice_details(invoice_id: int, db: Session = Depends(get_db)):
     return crud_invoice.get_invoice_by_id_with_details(db, invoice_id)
 
