@@ -6,6 +6,7 @@ from typing import List
 from database import SessionLocal
 from crud import student as crud_student
 from schemas.student import StudentCreate, StudentOut, PaginatedStudentResponse
+from utils.export_file import export_students_to_excel
 
 router = APIRouter(
     prefix="/students",
@@ -52,3 +53,7 @@ def update_student(student_id: int, student: StudentCreate, db: Session = Depend
 @router.delete("/{student_id}", response_model=StudentOut)      
 def delete_student(student_id: int, db: Session = Depends(get_db)):
     return crud_student.delete_student(db, student_id)
+
+@router.get("/export/excel")
+def export_students_excel(db: Session = Depends(get_db)):
+    return export_students_to_excel(db)

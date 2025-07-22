@@ -6,6 +6,7 @@ from database import SessionLocal
 from crud import invoice as crud_invoice
 from schemas.invoice import InvoiceCreate, InvoiceOut, PaginatedInvoiceResponse, InvoiceDetail
 from utils.invoice_triggers import recalculate_invoice_amount, recalculate_all_invoice_amounts
+from utils.export_file import export_invoices_to_excel
 
 router = APIRouter(
     prefix="/invoices",
@@ -67,3 +68,7 @@ def recalculate_invoice(invoice_id: int, db: Session = Depends(get_db)):
 def recalculate_all_invoices(db: Session = Depends(get_db)):
     recalculate_all_invoice_amounts(db)
     return {"message": "All invoice amounts recalculated successfully"}
+
+@router.get("/export/excel")
+def export_invoices_excel(db: Session = Depends(get_db)):
+    return export_invoices_to_excel(db)
