@@ -10,4 +10,4 @@ class Service(Base):
     UnitPrice = Column(Numeric(10, 2), nullable=False)
 
     # Relationships
-    service_usages = relationship("ServiceUsage", back_populates="service") 
+    service_usages = relationship("ServiceUsage", back_populates="services") 

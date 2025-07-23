@@ -7,6 +7,7 @@ from database import SessionLocal
 from crud import room as crud_room
 from schemas.room import RoomCreate, RoomOut, RoomDetailsOut, PaginatedRoomResponse, RoomSearchResult
 from utils.room_triggers import get_room_occupancy_info, update_all_room_statuses, create_room_triggers
+from utils.export_file import export_rooms_to_excel
 
 router = APIRouter(
     prefix="/rooms",
@@ -106,3 +107,7 @@ def setup_room_triggers(db: Session = Depends(get_db)):
     """Create database triggers for automatic room status management"""
     create_room_triggers(db)
     return {"message": "Room triggers created successfully"}
+
+@router.get("/export/excel")
+def export_rooms_excel(db: Session = Depends(get_db)):
+    return export_rooms_to_excel(db)

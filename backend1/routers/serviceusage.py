@@ -42,6 +42,7 @@ def read_serviceusages_paginated(
 def read_all_serviceusages(db: Session = Depends(get_db)):
     return crud_serviceusage.get_serviceusages(db)
 
+
 @router.get("/{serviceusage_id}", response_model=ServiceUsageOut)
 def get_serviceusage_by_id(serviceusage_id: int, db: Session = Depends(get_db)):
     return crud_serviceusage.get_serviceusage_by_id(db, serviceusage_id)
@@ -53,3 +54,7 @@ def update_serviceusage(serviceusage_id: int, serviceusage: ServiceUsageCreate, 
 @router.delete("/{serviceusage_id}", response_model=ServiceUsageOut)    
 def delete_serviceusage(serviceusage_id: int, db: Session = Depends(get_db)):
     return crud_serviceusage.delete_serviceusage(db, serviceusage_id)
+
+@router.delete("/all", response_model=dict)
+def delete_all_serviceusages(db: Session = Depends(get_db)):
+    return crud_serviceusage.delete_all_serviceusages(db)

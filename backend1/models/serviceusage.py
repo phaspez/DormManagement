@@ -7,11 +7,13 @@ class ServiceUsage(Base):
 
     ServiceUsageID = Column(Integer, primary_key=True, autoincrement=True)
     ContractID = Column(Integer, ForeignKey('Contract.ContractID'), nullable=False)
+    InvoiceID = Column(Integer, ForeignKey('Invoice.InvoiceID'), nullable=False)
     ServiceID = Column(Integer, ForeignKey('Service.ServiceID'), nullable=False)
     Quantity = Column(Integer, nullable=False)
     UsageMonth = Column(Integer, nullable=False)
     UsageYear = Column(Integer, nullable=False)
 
     # Relationships
-    service = relationship("Service", back_populates="service_usages") 
+    services = relationship("Service", back_populates="service_usages") 
     invoice = relationship("Invoice", back_populates="service_usages") 
+    contracts = relationship("Contract", back_populates="service_usages")

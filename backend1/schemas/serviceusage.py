@@ -4,6 +4,7 @@ from schemas.helper import PaginatedResponse
 
 class ServiceUsageCreate(BaseModel):
     ContractID: int
+    InvoiceID: int
     ServiceID: int
     Quantity: int
     UsageMonth: int

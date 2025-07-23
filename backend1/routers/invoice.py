@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import SessionLocal
 from crud import invoice as crud_invoice
-from schemas.invoice import InvoiceCreate, InvoiceOut, PaginatedInvoiceResponse
+from schemas.invoice import InvoiceCreate, InvoiceOut, PaginatedInvoiceResponse, InvoiceDetail
 from utils.invoice_triggers import recalculate_invoice_amount, recalculate_all_invoice_amounts
+from utils.export_file import export_invoices_to_excel
 
 router = APIRouter(
     prefix="/invoices",
@@ -43,6 +44,10 @@ def read_invoices_paginated(
 def get_invoice_by_id(invoice_id: int, db: Session = Depends(get_db)):
     return crud_invoice.get_invoice_by_id(db, invoice_id)
 
+@router.get("/{invoice_id}/details")
+def get_invoice_details(invoice_id: int, db: Session = Depends(get_db)):
+    return crud_invoice.get_invoice_by_id_with_details(db, invoice_id)
+
 @router.put("/{invoice_id}", response_model=InvoiceOut)
 def update_invoice(invoice_id: int, invoice: InvoiceCreate, db: Session = Depends(get_db)):
     return crud_invoice.update_invoice(db, invoice_id, invoice)
@@ -63,3 +68,7 @@ def recalculate_invoice(invoice_id: int, db: Session = Depends(get_db)):
 def recalculate_all_invoices(db: Session = Depends(get_db)):
     recalculate_all_invoice_amounts(db)
     return {"message": "All invoice amounts recalculated successfully"}
+
+@router.get("/export/excel")
+def export_invoices_excel(db: Session = Depends(get_db)):
+    return export_invoices_to_excel(db)

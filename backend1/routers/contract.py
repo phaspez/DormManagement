@@ -9,6 +9,7 @@ from schemas.contract import ContractCreate, ContractOut, ContractDetail, Pagina
 from models.student import Student
 from models.room import Room
 import math
+from utils.export_file import export_contracts_to_excel
 
 router = APIRouter(
     prefix="/contracts",
@@ -58,6 +59,10 @@ def read_contracts(
         "size": size,
         "pages": math.ceil(total / size) if total > 0 else 0
     }
+
+@router.get("/export/excel")
+def export_contracts_excel(db: Session = Depends(get_db)):
+    return export_contracts_to_excel(db)
 
 @router.get("/student/{student_id}/status")
 def get_student_contract_status(student_id: int, db: Session = Depends(get_db)):

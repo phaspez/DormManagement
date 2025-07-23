@@ -4,6 +4,7 @@ from typing import List
 from database import SessionLocal
 from crud import service as crud_service
 from schemas.service import ServiceCreate, ServiceOut
+from utils.export_file import export_services_to_excel
 
 router = APIRouter(
     prefix="/services",
@@ -24,6 +25,10 @@ def create_service(service: ServiceCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=List[ServiceOut])
 def read_services(db: Session = Depends(get_db)):
     return crud_service.get_services(db)
+
+@router.get("/export/excel")
+def export_services_excel(db: Session = Depends(get_db)):
+    return export_services_to_excel(db)
 
 @router.get("/{service_id}", response_model=ServiceOut)
 def get_service_by_id(service_id: int, db: Session = Depends(get_db)):

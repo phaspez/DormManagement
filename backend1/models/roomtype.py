@@ -10,4 +10,4 @@ class RoomType(Base):
     RentPrice = Column(Numeric(10, 2), nullable=False)
     
     # Relationships
-    rooms = relationship("Room", back_populates="room_type") 
+    rooms = relationship("Room", back_populates="room_types") 
