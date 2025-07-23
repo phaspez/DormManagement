@@ -7,7 +7,15 @@ from utils.invoice_triggers import recalculate_invoice_amount
 
 def create_serviceusage(db: Session, serviceusage: ServiceUsageCreate):
     db_serviceusage = ServiceUsage(ContractID=serviceusage.ContractID, InvoiceID=serviceusage.InvoiceID, ServiceID=serviceusage.ServiceID, Quantity=serviceusage.Quantity, UsageMonth=serviceusage.UsageMonth, UsageYear=serviceusage.UsageYear)
+
     db.add(db_serviceusage)
+    db.flush()
+
+    invoice_id = serviceusage.InvoiceID
+
+    if invoice_id:
+        recalculate_invoice_amount(db, invoice_id)
+
     db.commit()
     db.refresh(db_serviceusage)
     return db_serviceusage
@@ -40,7 +48,6 @@ def update_serviceusage(db: Session, serviceusage_id: int, serviceusage: Service
 
     # Nếu có InvoiceID thì cập nhật lại tổng tiền hóa đơn
     if invoice_id:
-        from utils.invoice_triggers import recalculate_invoice_amount
         recalculate_invoice_amount(db, invoice_id)
 
     db.commit()
@@ -49,7 +56,14 @@ def update_serviceusage(db: Session, serviceusage_id: int, serviceusage: Service
 
 def delete_serviceusage(db: Session, serviceusage_id: int):
     db_serviceusage = get_serviceusage_by_id(db, serviceusage_id)
+
+    invoice_id = db_serviceusage.InvoiceID
     db.delete(db_serviceusage)
+    db.flush()
+
+    if invoice_id:
+        recalculate_invoice_amount(db, invoice_id)
+
     db.commit()
     return db_serviceusage
 

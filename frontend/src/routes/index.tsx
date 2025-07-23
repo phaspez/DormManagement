@@ -1,13 +1,35 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Button } from "~/components/ui/button";
 import Header from "~/components/header";
 import { Hotel, ReceiptText, User, Notebook, CircleGauge } from "lucide-react";
+import { useAuth } from "~/contexts/AuthContext";
+import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: Home,
 });
 
 function Home() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   const pages = [
     {
       name: "Rooms",

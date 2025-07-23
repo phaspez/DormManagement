@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteRoom,
@@ -7,7 +7,7 @@ import {
   putRoomType,
   RoomType,
 } from "~/fetch/roomType";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -33,6 +33,7 @@ import { Trash2, Edit, Plus, X, Building2 } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
+import { useAuth } from "~/contexts/AuthContext";
 
 export const Route = createFileRoute("/roomtype")({
   component: RoomTypeManagement,
@@ -44,7 +45,15 @@ interface FormErrors {
 }
 
 export default function RoomTypeManagement() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   // Fetch room types
   const {

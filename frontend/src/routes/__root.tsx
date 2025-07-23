@@ -32,6 +32,7 @@ import {
 import { Separator } from "~/components/ui/separator";
 import { ThemeProvider } from "~/components/ThemeProvider";
 import { Toaster } from "~/components/ui/sonner";
+import { AuthProvider, useAuth } from "~/contexts/AuthContext";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -91,9 +92,30 @@ export const Route = createRootRouteWithContext<{
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </RootDocument>
   );
+}
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="w-full px-12 py-4">
+            <Outlet />
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
+  return <Outlet />;
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -111,7 +133,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider defaultTheme={"system"} storageKey="vite-ui-theme">
           <SidebarProvider>
-            <AppSidebar />
             <SidebarInset>
               <div className="w-full px-12 py-4">{children}</div>
             </SidebarInset>

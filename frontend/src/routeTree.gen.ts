@@ -13,6 +13,7 @@ import { Route as StudentRouteImport } from './routes/student'
 import { Route as ServiceusageRouteImport } from './routes/serviceusage'
 import { Route as ServiceRouteImport } from './routes/service'
 import { Route as RoomtypeRouteImport } from './routes/roomtype'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RoomIndexRouteImport } from './routes/room/index'
 import { Route as InvoiceIndexRouteImport } from './routes/invoice/index'
@@ -39,6 +40,11 @@ const ServiceRoute = ServiceRouteImport.update({
 const RoomtypeRoute = RoomtypeRouteImport.update({
   id: '/roomtype',
   path: '/roomtype',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -79,6 +85,7 @@ const ContractContractIdRoute = ContractContractIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/roomtype': typeof RoomtypeRoute
   '/service': typeof ServiceRoute
   '/serviceusage': typeof ServiceusageRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/roomtype': typeof RoomtypeRoute
   '/service': typeof ServiceRoute
   '/serviceusage': typeof ServiceusageRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/roomtype': typeof RoomtypeRoute
   '/service': typeof ServiceRoute
   '/serviceusage': typeof ServiceusageRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/roomtype'
     | '/service'
     | '/serviceusage'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/roomtype'
     | '/service'
     | '/serviceusage'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/login'
     | '/roomtype'
     | '/service'
     | '/serviceusage'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
   RoomtypeRoute: typeof RoomtypeRoute
   ServiceRoute: typeof ServiceRoute
   ServiceusageRoute: typeof ServiceusageRoute
@@ -201,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: '/roomtype'
       fullPath: '/roomtype'
       preLoaderRoute: typeof RoomtypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -257,6 +277,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
   RoomtypeRoute: RoomtypeRoute,
   ServiceRoute: ServiceRoute,
   ServiceusageRoute: ServiceusageRoute,

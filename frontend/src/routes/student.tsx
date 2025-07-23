@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -44,6 +44,7 @@ import TableSkeleton from "~/components/TableSkeleton";
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 import { exportContractsExcel } from "~/fetch/contract";
+import { useAuth } from "~/contexts/AuthContext";
 
 export const Route = createFileRoute("/student")({
   component: StudentManagement,
@@ -56,7 +57,15 @@ interface FormErrors {
 }
 
 export default function StudentManagement() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -70,6 +79,7 @@ export default function StudentManagement() {
   } = useQuery({
     queryFn: () => getStudents(page, limit),
     queryKey: ["students", page, limit],
+    enabled: isAuthenticated, // Only fetch when authenticated
   });
 
   // Type guard for studentsData
@@ -191,6 +201,16 @@ export default function StudentManagement() {
       deleteStudentMutation.mutate(studentID);
     }
   };
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (isLoading) {
     return (

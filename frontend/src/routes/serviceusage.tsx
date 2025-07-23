@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteServiceUsage,
@@ -8,7 +8,7 @@ import {
   putServiceUsage,
   ServiceUsage,
 } from "~/fetch/serviceUsage";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -54,6 +54,7 @@ import TableSkeleton from "~/components/TableSkeleton";
 import { getServices } from "~/fetch/service";
 import ServiceManagement from "~/routes/service";
 import { PaginationNav } from "~/components/ui/pagination-nav";
+import { useAuth } from "~/contexts/AuthContext";
 
 export const Route = createFileRoute("/serviceusage")({
   component: ServiceUsageManagement,
@@ -69,7 +70,15 @@ interface FormErrors {
 }
 
 export default function ServiceUsageManagement() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   // Pagination state
   const [page, setPage] = useState(1);

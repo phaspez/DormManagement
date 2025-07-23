@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteService,
@@ -7,7 +7,7 @@ import {
   putService,
   Service,
 } from "~/fetch/service";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -33,6 +33,7 @@ import { Trash2, Edit, Plus, X, Bath } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
+import { useAuth } from "~/contexts/AuthContext";
 
 export const Route = createFileRoute("/service")({
   component: ServiceManagement,
@@ -44,7 +45,15 @@ interface FormErrors {
 }
 
 export default function ServiceManagement() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   // Fetch services
   const {
@@ -54,6 +63,7 @@ export default function ServiceManagement() {
   } = useQuery({
     queryFn: getServices,
     queryKey: ["services"],
+    enabled: isAuthenticated, // Only fetch when authenticated
   });
 
   // Mutations
@@ -158,6 +168,16 @@ export default function ServiceManagement() {
       deleteServiceMutation.mutate(serviceID);
     }
   };
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (isLoading) {
     return (
