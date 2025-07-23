@@ -146,3 +146,28 @@ export async function searchRooms(keyword: string) {
     throw error;
   }
 }
+
+export async function exportRoomsExcel() {
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_BACKEND_URL + "/rooms/export/excel",
+      {
+        method: "GET",
+      },
+    );
+    if (!response.ok) throw new Error("Failed to export rooms Excel file");
+    const blob = await response.blob();
+    // Create a link and trigger download
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "rooms.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error exporting rooms Excel:", error);
+    throw error;
+  }
+}

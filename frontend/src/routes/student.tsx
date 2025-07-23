@@ -29,10 +29,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, User } from "lucide-react";
+import { Trash2, Edit, Plus, X, User, Download } from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteStudent,
+  exportStudentsExcel,
   getStudents,
   postStudent,
   putStudent,
@@ -42,6 +43,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
+import { exportContractsExcel } from "~/fetch/contract";
 
 export const Route = createFileRoute("/student")({
   component: StudentManagement,
@@ -362,6 +364,10 @@ export default function StudentManagement() {
                 </div>
               </DialogContent>
             </Dialog>
+            <Button onClick={exportStudentsExcel}>
+              <Download />
+              Export Excel
+            </Button>
           </div>
         </div>
       </div>

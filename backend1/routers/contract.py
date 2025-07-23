@@ -31,7 +31,7 @@ def create_contract(contract: ContractCreate, db: Session = Depends(get_db)):
 def get_contract_by_id(contract_id: int, db: Session = Depends(get_db)):
     return crud_contract.get_contract_by_id(db, contract_id)
 
-@router.get("/{contract_id}/details", response_model=ContractDetail)
+@router.get("/{contract_id}/details")
 def get_contract_details(contract_id: int, db: Session = Depends(get_db)):
     return crud_contract.get_contract_by_id_with_details(db, contract_id)
 

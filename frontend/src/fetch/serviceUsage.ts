@@ -3,6 +3,7 @@ import { handleResponse, Paginated } from "~/fetch/utils";
 export interface ServiceUsage {
   ContractID: number;
   ServiceID: number;
+  InvoiceID: number;
   Quantity: number;
   UsageMonth: number;
   UsageYear: number;
@@ -117,5 +118,28 @@ export async function deleteServiceUsage(serviceUsageID: number) {
   } catch (error) {
     console.error("Error deleting service usage:", error);
     throw error;
+  }
+}
+
+export async function exportServiceUsagesExcel() {
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_BACKEND_URL + "/serviceusages/export/excel",
+      {
+        method: "GET",
+      },
+    );
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "service_usages.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error exporting students to Excel:", error);
   }
 }

@@ -124,3 +124,30 @@ export async function deleteContract(contractID: string) {
     throw error;
   }
 }
+
+export async function exportContractsExcel() {
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_BACKEND_URL + "/contracts/export/excel",
+      {
+        method: "GET",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "contracts.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (error) {
+    console.error("Error exporting contracts to Excel:", error);
+    throw error;
+  }
+}

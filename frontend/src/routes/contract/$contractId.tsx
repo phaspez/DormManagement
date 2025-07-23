@@ -391,7 +391,10 @@ function RouteComponent() {
                           <h5 className="text-lg font-bold">
                             {service.ServiceName} x{service.Quantity}
                           </h5>
-                          <span>ID: {service.ServiceID}</span>
+                          <span>
+                            ID: {service.ServiceID}, Invoice ID:{" "}
+                            {service.InvoiceID}
+                          </span>
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {

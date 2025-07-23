@@ -39,6 +39,7 @@ interface FormErrors {
   Quantity?: string;
   UsageMonth?: string;
   UsageYear?: string;
+  InvoiceID?: string;
 }
 
 export default function ServiceUsageDialog({
@@ -73,6 +74,7 @@ export default function ServiceUsageDialog({
   const [formData, setFormData] = useState<
     Omit<ServiceUsage, "ServiceUsageID">
   >({
+    InvoiceID: 0,
     ContractID: parseInt(contractId),
     ServiceID: 0,
     Quantity: 0,
@@ -121,6 +123,7 @@ export default function ServiceUsageDialog({
   React.useEffect(() => {
     if (editingServiceUsage) {
       setFormData({
+        InvoiceID: editingServiceUsage.InvoiceID,
         ContractID: editingServiceUsage.ContractID,
         ServiceID: editingServiceUsage.ServiceID,
         Quantity: editingServiceUsage.Quantity,
@@ -153,6 +156,7 @@ export default function ServiceUsageDialog({
 
   const resetForm = () => {
     setFormData({
+      InvoiceID: 0,
       ContractID: parseInt(contractId),
       ServiceID: 0,
       Quantity: 0,
@@ -180,6 +184,10 @@ export default function ServiceUsageDialog({
 
     if (formData.UsageYear < 2000 || formData.UsageYear > currentYear + 1) {
       newErrors.UsageYear = "Please select a valid year";
+    }
+
+    if (formData.InvoiceID <= 0) {
+      newErrors.InvoiceID = "Please enter a valid Invoice ID";
     }
 
     setErrors(newErrors);
@@ -327,6 +335,23 @@ export default function ServiceUsageDialog({
                 <p className="text-sm text-destructive">{errors.UsageYear}</p>
               )}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="invoiceId">Invoice ID</Label>
+            <Input
+              id="invoiceId"
+              type="number"
+              placeholder="Enter Invoice ID"
+              value={formData.InvoiceID || ""}
+              onChange={(e) =>
+                handleInputChange("InvoiceID", parseInt(e.target.value) || 0)
+              }
+              className={errors.InvoiceID ? "border-destructive" : ""}
+            />
+            {errors.InvoiceID && (
+              <p className="text-sm text-destructive">{errors.InvoiceID}</p>
+            )}
           </div>
 
           <Separator />

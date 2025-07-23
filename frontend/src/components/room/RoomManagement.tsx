@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteRoom,
+  exportRoomsExcel,
   getRooms,
   postRoom,
   putRoom,
@@ -20,7 +21,7 @@ import {
 } from "~/components/ui/select";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
-import { MonitorCog, Hotel } from "lucide-react";
+import { MonitorCog, Hotel, Download } from "lucide-react";
 import RoomTypeManagement from "~/routes/roomtype";
 import { getRoomTypes } from "~/fetch/roomType";
 import Header from "~/components/header";
@@ -30,10 +31,6 @@ import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 import RoomFormDialog from "~/components/room/RoomFormDialog";
 import RoomTable from "~/components/room/RoomTable";
-
-// export const Route = createFileRoute("/room/")({
-//   component: RoomManagement,
-// });
 
 interface FormErrors {
   RoomTypeID?: string;
@@ -289,6 +286,11 @@ export default function RoomManagement() {
                 <RoomTypeManagement />
               </DialogContent>
             </Dialog>
+
+            <Button onClick={exportRoomsExcel}>
+              <Download />
+              Export Excel
+            </Button>
           </div>
         </div>
       </div>

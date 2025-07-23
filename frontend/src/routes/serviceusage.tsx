@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteServiceUsage,
+  exportServiceUsagesExcel,
   getServiceUsages,
   postServiceUsage,
   putServiceUsage,
   ServiceUsage,
 } from "~/fetch/serviceUsage";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -36,7 +37,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { Trash2, Edit, Plus, X, MonitorCog, CircleGauge } from "lucide-react";
+import {
+  Trash2,
+  Edit,
+  Plus,
+  X,
+  MonitorCog,
+  CircleGauge,
+  Info,
+  Download,
+} from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
@@ -50,6 +60,7 @@ export const Route = createFileRoute("/serviceusage")({
 
 interface FormErrors {
   ContractID?: string;
+  InvoiceID?: string;
   ServiceID?: string;
   Quantity?: string;
   UsageMonth?: string;
@@ -123,6 +134,7 @@ export default function ServiceUsageManagement() {
     Omit<ServiceUsage, "ServiceUsageID">
   >({
     ContractID: 0,
+    InvoiceID: 0,
     ServiceID: 0,
     Quantity: 0,
     UsageMonth: new Date().getMonth() + 1, // Current month (1-12)
@@ -159,6 +171,10 @@ export default function ServiceUsageManagement() {
 
     if (formData.ContractID <= 0) {
       newErrors.ContractID = "Please select a valid contract";
+    }
+
+    if (formData.InvoiceID <= 0) {
+      newErrors.InvoiceID = "Please enter a valid invoice ID";
     }
 
     if (formData.ServiceID <= 0) {
@@ -200,6 +216,7 @@ export default function ServiceUsageManagement() {
   const resetForm = () => {
     setFormData({
       ContractID: 0,
+      InvoiceID: 0,
       ServiceID: 0,
       Quantity: 0,
       UsageMonth: new Date().getMonth() + 1,
@@ -219,6 +236,7 @@ export default function ServiceUsageManagement() {
     setEditingServiceUsage(serviceUsage);
     setFormData({
       ContractID: serviceUsage.ContractID,
+      InvoiceID: serviceUsage.InvoiceID,
       ServiceID: serviceUsage.ServiceID,
       Quantity: serviceUsage.Quantity,
       UsageMonth: serviceUsage.UsageMonth,
@@ -317,6 +335,7 @@ export default function ServiceUsageManagement() {
                     setEditingServiceUsage(null);
                     setFormData({
                       ContractID: 0,
+                      InvoiceID: 0,
                       ServiceID: 0,
                       Quantity: 0,
                       UsageMonth: new Date().getMonth() + 1,
@@ -369,42 +388,60 @@ export default function ServiceUsageManagement() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="serviceID">Service</Label>
-                      <Select
-                        value={
-                          formData.ServiceID
-                            ? formData.ServiceID.toString()
-                            : ""
+                      <Label htmlFor="invoiceID">Invoice ID</Label>
+                      <Input
+                        id="invoiceID"
+                        type="number"
+                        placeholder="Enter invoice ID"
+                        value={formData.InvoiceID || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "InvoiceID",
+                            parseInt(e.target.value) || 0,
+                          )
                         }
-                        onValueChange={(value) =>
-                          handleInputChange("ServiceID", parseInt(value))
-                        }
-                        disabled={isServicesLoading || isServicesError}
-                      >
-                        <SelectTrigger
-                          className={
-                            errors.ServiceID ? "border-destructive" : ""
-                          }
-                        >
-                          <SelectValue placeholder="Select service" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {services?.map((service) => (
-                            <SelectItem
-                              key={service.ServiceID}
-                              value={service.ServiceID.toString()}
-                            >
-                              {service.ServiceName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.ServiceID && (
+                        className={errors.InvoiceID ? "border-destructive" : ""}
+                      />
+                      {errors.InvoiceID && (
                         <p className="text-sm text-destructive">
-                          {errors.ServiceID}
+                          {errors.InvoiceID}
                         </p>
                       )}
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="serviceID">Service</Label>
+                    <Select
+                      value={
+                        formData.ServiceID ? formData.ServiceID.toString() : ""
+                      }
+                      onValueChange={(value) =>
+                        handleInputChange("ServiceID", parseInt(value))
+                      }
+                      disabled={isServicesLoading || isServicesError}
+                    >
+                      <SelectTrigger
+                        className={errors.ServiceID ? "border-destructive" : ""}
+                      >
+                        <SelectValue placeholder="Select service" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {services?.map((service) => (
+                          <SelectItem
+                            key={service.ServiceID}
+                            value={service.ServiceID.toString()}
+                          >
+                            {service.ServiceName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.ServiceID && (
+                      <p className="text-sm text-destructive">
+                        {errors.ServiceID}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -534,6 +571,10 @@ export default function ServiceUsageManagement() {
                 <ServiceManagement />
               </DialogContent>
             </Dialog>
+            <Button onClick={exportServiceUsagesExcel}>
+              <Download />
+              Export Excel
+            </Button>
           </div>
         </div>
       </div>
@@ -583,8 +624,9 @@ export default function ServiceUsageManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Usage ID</TableHead>
+                    <TableHead>Service Usage ID</TableHead>
                     <TableHead>Contract ID</TableHead>
+                    <TableHead>Invoice ID</TableHead>
                     <TableHead>Service Name</TableHead>
                     <TableHead>Quantity</TableHead>
                     <TableHead>Usage Period</TableHead>
@@ -595,7 +637,24 @@ export default function ServiceUsageManagement() {
                   {serviceUsages.map((usage: ServiceUsage) => (
                     <TableRow key={usage.ServiceUsageID}>
                       <TableCell>{usage.ServiceUsageID}</TableCell>
-                      <TableCell>{usage.ContractID}</TableCell>
+                      <TableCell>
+                        {
+                          <div>
+                            <Link
+                              to={"/contract/$contractId"}
+                              params={{
+                                contractId: usage.ContractID.toString(),
+                              }}
+                            >
+                              <Button size="sm">
+                                <p>{usage.ContractID}</p>
+                                <Info />
+                              </Button>
+                            </Link>
+                          </div>
+                        }
+                      </TableCell>
+                      <TableCell>{usage.InvoiceID}</TableCell>
                       <TableCell>
                         {
                           services?.find(

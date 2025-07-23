@@ -7,6 +7,7 @@ import {
   putContract,
   Contract,
   BaseContract,
+  exportContractsExcel,
 } from "~/fetch/contract";
 import { Paginated } from "~/fetch/utils";
 import { getStudentByID } from "~/fetch/student";
@@ -22,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Trash2, Edit, Notebook, Info } from "lucide-react";
+import { Trash2, Edit, Notebook, Info, Download } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
@@ -36,6 +37,7 @@ import {
 } from "~/components/ui/select";
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { toast } from "sonner";
+import { exportRoomsExcel } from "~/fetch/room";
 
 interface FormErrors {
   StudentID?: string;
@@ -286,6 +288,10 @@ export default function ContractManagement() {
               editingContract={editingContract}
               resetForm={resetForm}
             />
+            <Button onClick={exportContractsExcel}>
+              <Download />
+              Export Excel
+            </Button>
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@ import { Calendar } from "~/components/ui/calendar";
 import { Edit, Plus, CalendarIcon, X } from "lucide-react";
 
 interface FormErrors {
-  ServiceUsageID?: string;
+  //ServiceUsageID?: string;
   CreatedDate?: string;
   DueDate?: string;
 }
@@ -93,15 +93,14 @@ export default function InvoiceFormDialog({
     }
   };
 
-  const isFormValid =
-    !!formData.ServiceUsageID && !!formData.CreatedDate && !!formData.DueDate;
+  const isFormValid = !!formData.CreatedDate && !!formData.DueDate;
 
   const defaultTriggerButton = (
     <Button
       className="flex items-center gap-2"
       onClick={() => {
         setFormData({
-          ServiceUsageID: 0,
+          //ServiceUsageID: 0,
           CreatedDate: "",
           DueDate: "",
         });
@@ -132,27 +131,27 @@ export default function InvoiceFormDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="serviceUsageID">Service Usage ID</Label>
-            <Input
-              id="serviceUsageID"
-              type="number"
-              placeholder="Enter service usage ID"
-              value={formData.ServiceUsageID || ""}
-              onChange={(e) =>
-                handleInputChange(
-                  "ServiceUsageID",
-                  parseInt(e.target.value) || 0,
-                )
-              }
-              className={errors.ServiceUsageID ? "border-destructive" : ""}
-            />
-            {errors.ServiceUsageID && (
-              <p className="text-sm text-destructive">
-                {errors.ServiceUsageID}
-              </p>
-            )}
-          </div>
+          {/*<div className="space-y-2">*/}
+          {/*  <Label htmlFor="serviceUsageID">Service Usage ID</Label>*/}
+          {/*  <Input*/}
+          {/*    id="serviceUsageID"*/}
+          {/*    type="number"*/}
+          {/*    placeholder="Enter service usage ID"*/}
+          {/*    value={formData.ServiceUsageID || ""}*/}
+          {/*    onChange={(e) =>*/}
+          {/*      handleInputChange(*/}
+          {/*        "ServiceUsageID",*/}
+          {/*        parseInt(e.target.value) || 0,*/}
+          {/*      )*/}
+          {/*    }*/}
+          {/*    className={errors.ServiceUsageID ? "border-destructive" : ""}*/}
+          {/*  />*/}
+          {/*  {errors.ServiceUsageID && (*/}
+          {/*    <p className="text-sm text-destructive">*/}
+          {/*      {errors.ServiceUsageID}*/}
+          {/*    </p>*/}
+          {/*  )}*/}
+          {/*</div>*/}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

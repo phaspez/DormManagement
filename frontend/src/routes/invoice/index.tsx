@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Alert, AlertDescription } from "~/components/ui/alert";
@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Trash2, Edit, ReceiptText } from "lucide-react";
+import { Trash2, Edit, ReceiptText, Info, Download } from "lucide-react";
 import Header from "~/components/header";
 import {
   deleteInvoice,
@@ -20,6 +20,7 @@ import {
   postInvoice,
   putInvoice,
   Invoice,
+  exportInvoicesExcel,
 } from "~/fetch/invoice";
 import { format } from "date-fns";
 import TableSkeleton from "~/components/TableSkeleton";
@@ -34,13 +35,14 @@ import {
 import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 import InvoiceFormDialog from "~/components/invoice/InvoiceFormDialog";
+import { exportContractsExcel } from "~/fetch/contract";
 
-export const Route = createFileRoute("/invoice")({
+export const Route = createFileRoute("/invoice/")({
   component: InvoiceManagement,
 });
 
 interface FormErrors {
-  ServiceUsageID?: string;
+  //ServiceUsageID?: string;
   CreatedDate?: string;
   DueDate?: string;
 }
@@ -98,7 +100,7 @@ export default function InvoiceManagement() {
 
   // State for form inputs
   const [formData, setFormData] = useState({
-    ServiceUsageID: 0,
+    //ServiceUsageID: 0,
     CreatedDate: new Date().toISOString().split("T")[0],
     DueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       .toISOString()
@@ -120,9 +122,9 @@ export default function InvoiceManagement() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (formData.ServiceUsageID <= 0) {
-      newErrors.ServiceUsageID = "Service usage ID must be greater than 0";
-    }
+    // if (formData.ServiceUsageID <= 0) {
+    //   newErrors.ServiceUsageID = "Service usage ID must be greater than 0";
+    // }
 
     if (!formData.CreatedDate) {
       newErrors.CreatedDate = "Created date is required";
@@ -186,7 +188,7 @@ export default function InvoiceManagement() {
     const thirtyDaysLater = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     setFormData({
-      ServiceUsageID: 0,
+      //ServiceUsageID: 0,
       CreatedDate: today.toISOString().split("T")[0],
       DueDate: thirtyDaysLater.toISOString().split("T")[0],
     });
@@ -205,7 +207,7 @@ export default function InvoiceManagement() {
   const handleEditInvoice = (invoice: Invoice) => {
     setEditingInvoice(invoice);
     setFormData({
-      ServiceUsageID: invoice.ServiceUsageID,
+      //ServiceUsageID: invoice.ServiceUsageID,
       CreatedDate: invoice.CreatedDate.split("T")[0],
       DueDate: invoice.DueDate.split("T")[0],
     });
@@ -318,6 +320,10 @@ export default function InvoiceManagement() {
               editingInvoice={editingInvoice}
               resetForm={resetForm}
             />
+            <Button onClick={exportInvoicesExcel}>
+              <Download />
+              Export Excel
+            </Button>
           </div>
         </div>
       </div>
@@ -368,7 +374,7 @@ export default function InvoiceManagement() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Invoice ID</TableHead>
-                    <TableHead>Service Usage ID</TableHead>
+                    {/*<TableHead>Service Usage ID</TableHead>*/}
                     <TableHead>Created Date</TableHead>
                     <TableHead>Due Date</TableHead>
                     <TableHead>Total Amount</TableHead>
@@ -381,7 +387,7 @@ export default function InvoiceManagement() {
                       <TableCell className="font-medium">
                         {invoice.InvoiceID}
                       </TableCell>
-                      <TableCell>{invoice.ServiceUsageID}</TableCell>
+                      {/*<TableCell>{invoice.ServiceUsageID}</TableCell>*/}
                       <TableCell>{formatDate(invoice.CreatedDate)}</TableCell>
                       <TableCell>{formatDate(invoice.DueDate)}</TableCell>
                       <TableCell>
@@ -410,6 +416,18 @@ export default function InvoiceManagement() {
                             <Trash2 className="h-3 w-3" />
                             Delete
                           </Button>
+                          <Link
+                            to={"/invoice/$invoiceId"}
+                            params={{ invoiceId: invoice.InvoiceID.toString() }}
+                          >
+                            <Button
+                              variant={"secondary"}
+                              size="sm"
+                              className="flex items-center gap-1"
+                            >
+                              <Info />
+                            </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>

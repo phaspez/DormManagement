@@ -109,3 +109,26 @@ export async function deleteStudent(studentID: number) {
     throw error;
   }
 }
+
+export async function exportStudentsExcel() {
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_BACKEND_URL + "/students/export/excel",
+      {
+        method: "GET",
+      },
+    );
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "students.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error exporting students to Excel:", error);
+  }
+}
