@@ -154,6 +154,8 @@ def get_contract_by_id_with_details(db: Session, contract_id: int):
     # Query service usages
     service_usages = db.query(
         ServiceUsage.ServiceUsageID,
+        ServiceUsage.ContractID,
+        ServiceUsage.InvoiceID,
         ServiceUsage.ServiceID,
         Service.ServiceName,
         ServiceUsage.Quantity,
@@ -179,6 +181,8 @@ def get_contract_by_id_with_details(db: Session, contract_id: int):
         "ServiceUsages": [
             {
                 "ServiceUsageID": su.ServiceUsageID,
+                "ContractID": su.ContractID,
+                "InvoiceID": su.InvoiceID,
                 "ServiceID": su.ServiceID,
                 "ServiceName": su.ServiceName,
                 "Quantity": su.Quantity,
