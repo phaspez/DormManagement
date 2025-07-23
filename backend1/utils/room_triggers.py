@@ -15,7 +15,8 @@ def create_room_triggers(db: Session):
     drop_statements = [
         "DROP TRIGGER IF EXISTS update_room_status_on_contract_insert",
         "DROP TRIGGER IF EXISTS update_room_status_on_contract_delete",
-        "DROP TRIGGER IF EXISTS update_room_status_on_contract_update"
+        "DROP TRIGGER IF EXISTS update_room_status_on_contract_update",
+        "DROP TRIGGER IF EXISTS prevent_max_occupancy_below_current"
     ]
     
     for statement in drop_statements:
@@ -130,12 +131,39 @@ def create_room_triggers(db: Session):
     END;
     """
     
+    # Create trigger to prevent MaxOccupancy from being set below current occupancy
+    max_occupancy_trigger_sql = """
+    CREATE TRIGGER prevent_max_occupancy_below_current
+    BEFORE UPDATE ON Room
+    FOR EACH ROW
+    BEGIN
+        DECLARE current_occupancy INT;
+        
+        -- Only check if MaxOccupancy is being changed
+        IF OLD.MaxOccupancy != NEW.MaxOccupancy THEN
+            -- Get current occupancy count for the room
+            SELECT COUNT(*) INTO current_occupancy
+            FROM Contract 
+            WHERE RoomID = NEW.RoomID 
+            AND StartDate <= CURDATE()
+            AND EndDate >= CURDATE();
+            
+            -- Prevent update if new MaxOccupancy is less than current occupancy
+            IF NEW.MaxOccupancy < current_occupancy THEN
+                SIGNAL SQLSTATE '45000' 
+                SET MESSAGE_TEXT = CONCAT('Cannot set MaxOccupancy (', NEW.MaxOccupancy, ') smaller than current occupancy (', current_occupancy, ')');
+            END IF;
+        END IF;
+    END;
+    """
+
     try:
         # Execute the SQL statements
         
         db.execute(text(insert_trigger_sql))
         db.execute(text(delete_trigger_sql))
         db.execute(text(update_trigger_sql))
+        db.execute(text(max_occupancy_trigger_sql))
         db.commit()
         print("Room triggers created successfully")
     except Exception as e:

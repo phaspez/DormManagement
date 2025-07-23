@@ -7,7 +7,10 @@ from utils.invoice_triggers import recalculate_invoice_amount
 
 def create_serviceusage(db: Session, serviceusage: ServiceUsageCreate):
     db_serviceusage = ServiceUsage(ContractID=serviceusage.ContractID, InvoiceID=serviceusage.InvoiceID, ServiceID=serviceusage.ServiceID, Quantity=serviceusage.Quantity, UsageMonth=serviceusage.UsageMonth, UsageYear=serviceusage.UsageYear)
-
+    # check if the serviceusage already exists in invoice id
+    if db.query(ServiceUsage).filter(ServiceUsage.InvoiceID == serviceusage.InvoiceID).first():
+        return {"message": "Service usage already exists in invoice"}
+    
     db.add(db_serviceusage)
     db.flush()
 

@@ -75,22 +75,6 @@ def search_rooms_by_number(
     """Search for rooms by room number and return just ID and room number"""
     return crud_room.search_rooms_by_number(db, room_number)
 
-@router.get("/search/by-number", response_model=List[RoomSearchResult])
-def search_rooms_by_number(
-    room_number: str = Query("", description="Room number to search for (partial match)"),
-    db: Session = Depends(get_db)
-):
-    """Search for rooms by room number and return just ID and room number"""
-    return crud_room.search_rooms_by_number(db, room_number)
-
-@router.get("/search/by-number", response_model=List[RoomSearchResult])
-def search_rooms_by_number(
-    room_number: str = Query("", description="Room number to search for (partial match)"),
-    db: Session = Depends(get_db)
-):
-    """Search for rooms by room number and return just ID and room number"""
-    return crud_room.search_rooms_by_number(db, room_number)
-
 @router.get("/{room_id}/occupancy")
 def get_room_occupancy(room_id: int, db: Session = Depends(get_db)):
     """Get detailed occupancy information for a specific room"""
