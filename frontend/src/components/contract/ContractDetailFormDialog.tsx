@@ -28,7 +28,8 @@ import { getServices } from "~/fetch/service";
 import { toast } from "sonner";
 
 interface ServiceUsageDialogProps {
-  contractId: string;
+  contractId?: string;
+  invoiceId?: string;
   editingServiceUsage?: ServiceUsage | null;
   onSuccess?: () => void;
   trigger?: React.ReactNode;
@@ -44,6 +45,7 @@ interface FormErrors {
 
 export default function ServiceUsageDialog({
   contractId,
+  invoiceId,
   editingServiceUsage = null,
   onSuccess,
   trigger,
@@ -74,8 +76,8 @@ export default function ServiceUsageDialog({
   const [formData, setFormData] = useState<
     Omit<ServiceUsage, "ServiceUsageID">
   >({
-    InvoiceID: 0,
-    ContractID: parseInt(contractId),
+    InvoiceID: invoiceId ? parseInt(invoiceId) : 0,
+    ContractID: contractId ? parseInt(contractId) : 0,
     ServiceID: 0,
     Quantity: 0,
     UsageMonth: new Date().getMonth() + 1,
@@ -94,7 +96,12 @@ export default function ServiceUsageDialog({
   const createServiceUsageMutation = useMutation({
     mutationFn: postServiceUsage,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contracts", contractId] });
+      if (contractId) {
+        queryClient.invalidateQueries({ queryKey: ["contracts", contractId] });
+      }
+      if (invoiceId) {
+        queryClient.invalidateQueries({ queryKey: ["invoices", invoiceId] });
+      }
       toast.success("Service usage added successfully");
       resetForm();
       if (onSuccess) onSuccess();
@@ -108,7 +115,12 @@ export default function ServiceUsageDialog({
   const updateServiceUsageMutation = useMutation({
     mutationFn: putServiceUsage,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contracts", contractId] });
+      if (contractId) {
+        queryClient.invalidateQueries({ queryKey: ["contracts", contractId] });
+      }
+      if (invoiceId) {
+        queryClient.invalidateQueries({ queryKey: ["invoices", invoiceId] });
+      }
       toast.success("Service usage updated successfully");
       resetForm();
       if (onSuccess) onSuccess();
@@ -131,13 +143,14 @@ export default function ServiceUsageDialog({
         UsageYear: editingServiceUsage.UsageYear,
       });
     } else {
-      // Default to current contract ID when adding new
+      // Default to current contract/invoice ID when adding new
       setFormData((prev) => ({
         ...prev,
-        ContractID: parseInt(contractId),
+        ContractID: contractId ? parseInt(contractId) : 0,
+        InvoiceID: invoiceId ? parseInt(invoiceId) : 0,
       }));
     }
-  }, [editingServiceUsage, contractId, isOpen]);
+  }, [editingServiceUsage, contractId, invoiceId, isOpen]);
 
   const handleInputChange = (name: string, value: string | number) => {
     setFormData((prev) => ({
@@ -156,8 +169,8 @@ export default function ServiceUsageDialog({
 
   const resetForm = () => {
     setFormData({
-      InvoiceID: 0,
-      ContractID: parseInt(contractId),
+      InvoiceID: invoiceId ? parseInt(invoiceId) : 0,
+      ContractID: contractId ? parseInt(contractId) : 0,
       ServiceID: 0,
       Quantity: 0,
       UsageMonth: new Date().getMonth() + 1,
@@ -186,8 +199,14 @@ export default function ServiceUsageDialog({
       newErrors.UsageYear = "Please select a valid year";
     }
 
-    if (formData.InvoiceID <= 0) {
+    // Only validate InvoiceID if we're not in invoice context (where it's auto-filled)
+    if (!invoiceId && formData.InvoiceID <= 0) {
       newErrors.InvoiceID = "Please enter a valid Invoice ID";
+    }
+
+    // Only validate ContractID if we're not in contract context (where it's auto-filled)
+    if (!contractId && formData.ContractID <= 0) {
+      newErrors.InvoiceID = "Please enter a valid Contract ID";
     }
 
     setErrors(newErrors);
@@ -201,7 +220,8 @@ export default function ServiceUsageDialog({
       updateServiceUsageMutation.mutate({
         ...editingServiceUsage,
         ...formData,
-        ContractID: parseInt(contractId),
+        ContractID: contractId ? parseInt(contractId) : formData.ContractID,
+        InvoiceID: invoiceId ? parseInt(invoiceId) : formData.InvoiceID,
       });
     } else {
       createServiceUsageMutation.mutate(formData);
@@ -337,22 +357,87 @@ export default function ServiceUsageDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="invoiceId">Invoice ID</Label>
-            <Input
-              id="invoiceId"
-              type="number"
-              placeholder="Enter Invoice ID"
-              value={formData.InvoiceID || ""}
-              onChange={(e) =>
-                handleInputChange("InvoiceID", parseInt(e.target.value) || 0)
-              }
-              className={errors.InvoiceID ? "border-destructive" : ""}
-            />
-            {errors.InvoiceID && (
-              <p className="text-sm text-destructive">{errors.InvoiceID}</p>
-            )}
-          </div>
+          {/* Contract ID field - only show when in invoice context */}
+          {invoiceId && (
+            <div className="space-y-2">
+              <Label htmlFor="contractId">Contract ID</Label>
+              <Input
+                id="contractId"
+                type="number"
+                placeholder="Enter Contract ID"
+                value={formData.ContractID || ""}
+                onChange={(e) =>
+                  handleInputChange("ContractID", parseInt(e.target.value) || 0)
+                }
+                className={errors.InvoiceID ? "border-destructive" : ""}
+              />
+              {errors.InvoiceID && (
+                <p className="text-sm text-destructive">
+                  Please enter a valid Contract ID
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Invoice ID field - only show when in contract context */}
+          {contractId && (
+            <div className="space-y-2">
+              <Label htmlFor="invoiceId">Invoice ID</Label>
+              <Input
+                id="invoiceId"
+                type="number"
+                placeholder="Enter Invoice ID"
+                value={formData.InvoiceID || ""}
+                onChange={(e) =>
+                  handleInputChange("InvoiceID", parseInt(e.target.value) || 0)
+                }
+                className={errors.InvoiceID ? "border-destructive" : ""}
+              />
+              {errors.InvoiceID && (
+                <p className="text-sm text-destructive">{errors.InvoiceID}</p>
+              )}
+            </div>
+          )}
+
+          {/* Show both fields when editing existing service usage */}
+          {editingServiceUsage && !contractId && !invoiceId && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="contractId">Contract ID</Label>
+                <Input
+                  id="contractId"
+                  type="number"
+                  placeholder="Enter Contract ID"
+                  value={formData.ContractID || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "ContractID",
+                      parseInt(e.target.value) || 0,
+                    )
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="invoiceId">Invoice ID</Label>
+                <Input
+                  id="invoiceId"
+                  type="number"
+                  placeholder="Enter Invoice ID"
+                  value={formData.InvoiceID || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "InvoiceID",
+                      parseInt(e.target.value) || 0,
+                    )
+                  }
+                  className={errors.InvoiceID ? "border-destructive" : ""}
+                />
+                {errors.InvoiceID && (
+                  <p className="text-sm text-destructive">{errors.InvoiceID}</p>
+                )}
+              </div>
+            </>
+          )}
 
           <Separator />
 

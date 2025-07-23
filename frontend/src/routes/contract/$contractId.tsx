@@ -387,22 +387,46 @@ function RouteComponent() {
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col gap-1">
-                        <div className="flex gap-2 items-center justify-between">
+                        <div className="flex gap-2 items-center">
+                          <h5 className="text-md">{service.ServiceName}</h5>
                           <h5 className="text-lg font-bold">
-                            {service.ServiceName} x{service.Quantity}
+                            ${service.UnitPrice}&times;{service.Quantity} = $
+                            {service.UnitPrice * service.Quantity}
                           </h5>
-                          <span>
-                            ID: {service.ServiceID}, Invoice ID:{" "}
-                            {service.InvoiceID}
-                          </span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {
-                            months.find((m) => m.value === service.UsageMonth)
-                              ?.label
-                          }{" "}
-                          {service.UsageYear}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-muted-foreground">
+                            {
+                              months.find((m) => m.value === service.UsageMonth)
+                                ?.label
+                            }{" "}
+                            {service.UsageYear}
+                          </p>
+                          <div className="flex gap-2 items-center">
+                            <Link
+                              to="/invoice/$invoiceId"
+                              params={{
+                                invoiceId: service.InvoiceID.toString(),
+                              }}
+                            >
+                              <Badge
+                                variant="outline"
+                                className="cursor-pointer"
+                              >
+                                View Invoice {service.InvoiceID}
+                                <ArrowUpRight className="h-3 w-3 ml-1" />
+                              </Badge>
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/*<p className="text-sm text-muted-foreground">*/}
+                        {/*  {*/}
+                        {/*    months.find((m) => m.value === service.UsageMonth)*/}
+                        {/*      ?.label*/}
+                        {/*  }{" "}*/}
+                        {/*  {service.UsageYear}*/}
+                        {/*</p>*/}
                       </div>
                       <div className="flex gap-2">
                         <ServiceUsageDialog

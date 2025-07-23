@@ -23,7 +23,14 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Trash2, Edit, Notebook, Info, Download } from "lucide-react";
+import {
+  Trash2,
+  Edit,
+  Notebook,
+  Info,
+  Download,
+  ArrowUpRight,
+} from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
 import TableSkeleton from "~/components/TableSkeleton";
@@ -362,7 +369,23 @@ export default function ContractManagement() {
                           getStudentName(contract.StudentID)
                         )}
                       </TableCell>
-                      <TableCell>{contract.RoomNumber}</TableCell>
+                      <TableCell>
+                        {
+                          <div className="flex items-center gap-2">
+                            <p>{contract.RoomNumber}</p>
+                            <Link
+                              to={"/room/$roomId"}
+                              params={{
+                                roomId: contract.RoomID.toString(),
+                              }}
+                            >
+                              <Button size="sm" variant="outline">
+                                <ArrowUpRight />
+                              </Button>
+                            </Link>
+                          </div>
+                        }
+                      </TableCell>
                       <TableCell>{formatDate(contract.StartDate)}</TableCell>
                       <TableCell>{formatDate(contract.EndDate)}</TableCell>
                       <TableCell className="text-right">

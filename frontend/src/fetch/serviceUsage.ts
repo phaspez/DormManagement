@@ -12,6 +12,7 @@ export interface ServiceUsage {
 
 export interface ServiceUsageWithName extends ServiceUsage {
   ServiceName: string;
+  UnitPrice: number;
 }
 
 export async function getServiceUsages(page: number = 1, size: number = 20) {

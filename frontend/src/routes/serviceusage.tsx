@@ -46,6 +46,7 @@ import {
   CircleGauge,
   Info,
   Download,
+  ArrowUpRight,
 } from "lucide-react";
 import Header from "~/components/header";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -639,22 +640,38 @@ export default function ServiceUsageManagement() {
                       <TableCell>{usage.ServiceUsageID}</TableCell>
                       <TableCell>
                         {
-                          <div>
+                          <div className="flex items-center gap-2">
+                            <p>{usage.ContractID}</p>
                             <Link
                               to={"/contract/$contractId"}
                               params={{
                                 contractId: usage.ContractID.toString(),
                               }}
                             >
-                              <Button size="sm">
-                                <p>{usage.ContractID}</p>
-                                <Info />
+                              <Button size="sm" variant="outline">
+                                <ArrowUpRight />
                               </Button>
                             </Link>
                           </div>
                         }
                       </TableCell>
-                      <TableCell>{usage.InvoiceID}</TableCell>
+                      <TableCell>
+                        {
+                          <div className="flex items-center gap-2">
+                            <p>{usage.InvoiceID}</p>
+                            <Link
+                              to={"/invoice/$invoiceId"}
+                              params={{
+                                invoiceId: usage.InvoiceID.toString(),
+                              }}
+                            >
+                              <Button size="sm" variant="outline">
+                                <ArrowUpRight />
+                              </Button>
+                            </Link>
+                          </div>
+                        }
+                      </TableCell>
                       <TableCell>
                         {
                           services?.find(

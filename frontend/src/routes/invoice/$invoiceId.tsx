@@ -13,7 +13,14 @@ import {
 } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { CalendarIcon, Info, ArrowUpRight, Pencil, Trash } from "lucide-react";
+import {
+  CalendarIcon,
+  Info,
+  ArrowUpRight,
+  Pencil,
+  Trash,
+  PlusCircle,
+} from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import ServiceUsageDialog from "~/components/contract/ContractDetailFormDialog";
@@ -125,7 +132,7 @@ function RouteComponent() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Invoice Details</h1>
       </div>
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -155,18 +162,32 @@ function RouteComponent() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Total Amount:</span>
-                <Badge variant="outline" className="text-sm py-1.5">
-                  {invoice.TotalAmount}
+                <span className="text-sm font-medium">Total Amount: </span>
+                <Badge variant="outline" className="text-xl py-1.5">
+                  $ {invoice.TotalAmount}
                 </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Service Usages</CardTitle>
-            <CardDescription>Services included in this invoice</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Service Usages</CardTitle>
+              <CardDescription>
+                Services included in this invoice
+              </CardDescription>
+            </div>
+            <ServiceUsageDialog
+              contractId=""
+              invoiceId={invoiceId}
+              trigger={
+                <Button className="flex items-center gap-2">
+                  <PlusCircle className="h-4 w-4" />
+                  Add Service
+                </Button>
+              }
+            />
           </CardHeader>
           <CardContent>
             {invoice.ServiceUsages && invoice.ServiceUsages.length > 0 ? (
@@ -178,46 +199,44 @@ function RouteComponent() {
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col gap-1">
-                        <div className="flex gap-2 items-center justify-between">
-                          <h5 className="text-lg font-bold">
-                            {service.ServiceName} x{service.Quantity}
-                          </h5>
-                          <span>
-                            ID: {service.ServiceID}, Contract ID:{" "}
-                            {service.ContractID}, Invoice ID:{" "}
-                            {service.InvoiceID}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {
-                            months.find((m) => m.value === service.UsageMonth)
-                              ?.label
-                          }{" "}
-                          {service.UsageYear}
-                        </p>
                         <div className="flex gap-2 items-center">
-                          <Link
-                            to="/contract/$contractId"
-                            params={{
-                              contractId: service.ContractID.toString(),
-                            }}
-                          >
-                            <Badge variant="outline" className="cursor-pointer">
-                              View Contract{" "}
-                              <ArrowUpRight className="inline ml-1 h-4 w-4" />
-                            </Badge>
-                          </Link>
+                          <h5 className="text-md">{service.ServiceName}</h5>
+                          <h5 className="text-lg font-bold">
+                            ${service.UnitPrice}&times;{service.Quantity} = $
+                            {service.UnitPrice * service.Quantity}
+                          </h5>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-muted-foreground">
+                            {
+                              months.find((m) => m.value === service.UsageMonth)
+                                ?.label
+                            }{" "}
+                            {service.UsageYear}
+                          </p>
+                          <div className="flex gap-2 items-center">
+                            <Link
+                              to="/contract/$contractId"
+                              params={{
+                                contractId: service.ContractID.toString(),
+                              }}
+                            >
+                              <Badge
+                                variant="outline"
+                                className="cursor-pointer"
+                              >
+                                View Contract {service.ContractID}
+                                <ArrowUpRight className="h-3 w-3 ml-1" />
+                              </Badge>
+                            </Link>
+                          </div>
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <ServiceUsageDialog
-                          contractId={service.ContractID.toString()}
+                          contractId=""
+                          invoiceId={invoiceId}
                           editingServiceUsage={service}
-                          onSuccess={() => {
-                            queryClient.invalidateQueries({
-                              queryKey: ["invoices", invoiceId],
-                            });
-                          }}
                           trigger={
                             <Button size="sm" variant="outline">
                               <Pencil className="h-4 w-4" />
