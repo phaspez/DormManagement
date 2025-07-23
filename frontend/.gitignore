@@ -8,6 +8,7 @@ yarn.lock
 .vercel
 .output
 /.vscode/
+/.nitro/
 /.tanstack/
 /.idea/
 /build/
