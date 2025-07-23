@@ -6,6 +6,8 @@ from typing import List, Generic, TypeVar
 
 class ServiceUsageBase(BaseModel):
     ServiceUsageID: int
+    ContractID: int
+    InvoiceID: int
     ServiceID: int
     ServiceName: str
     Quantity: int
