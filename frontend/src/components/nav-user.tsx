@@ -18,19 +18,12 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar";
 import { useAuth } from "~/contexts/AuthContext";
-import { Button } from "~/components/ui/button";
 
-export function NavUser({}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
+export function NavUser() {
   const { user, logout, isAuthenticated } = useAuth();
   const { isMobile } = useSidebar();
 
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated || !user || !user.Username || !user.UserID) {
     return null; // Don't render anything if not authenticated
   }
   return (
