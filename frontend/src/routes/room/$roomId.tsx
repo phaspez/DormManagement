@@ -76,6 +76,9 @@ function RouteComponent() {
     mutationFn: async (updatedRoom: any) => {
       await putRoom({ ...room, ...updatedRoom });
     },
+    onError: (error) => {
+      toast.error(error.message);
+    },
     onSuccess: () => {
       setIsEditDialogOpen(false);
       window.location.reload();

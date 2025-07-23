@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from datetime import date
 
 from crud.contract import get_contracts_by_room
 from models.contract import Contract
@@ -18,6 +19,23 @@ def create_room(db: Session, room: RoomCreate):
 
 def update_room(db: Session, room_id: int, room: RoomCreate):
     db_room = get_room_by_id(db, room_id)
+    
+    # Check if new MaxOccupancy is smaller than current occupancy
+    if room.MaxOccupancy < db_room.MaxOccupancy:
+        # Get current occupancy by counting active contracts
+        today = date.today()
+        current_occupancy = db.query(Contract).filter(
+            Contract.RoomID == room_id,
+            Contract.StartDate <= today,
+            Contract.EndDate >= today
+        ).count()
+        
+        if room.MaxOccupancy < current_occupancy:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot set MaxOccupancy ({room.MaxOccupancy}) smaller than current occupancy ({current_occupancy})"
+            )
+    
     db_room.RoomTypeID = room.RoomTypeID
     db_room.RoomNumber = room.RoomNumber
     db_room.MaxOccupancy = room.MaxOccupancy

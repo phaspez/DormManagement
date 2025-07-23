@@ -31,6 +31,7 @@ import { PaginationNav } from "~/components/ui/pagination-nav";
 import { Paginated } from "~/fetch/utils";
 import RoomFormDialog from "~/components/room/RoomFormDialog";
 import RoomTable from "~/components/room/RoomTable";
+import { toast } from "sonner";
 
 interface FormErrors {
   RoomTypeID?: string;
@@ -89,6 +90,9 @@ export default function RoomManagement() {
 
   const updateRoomMutation = useMutation({
     mutationFn: putRoom,
+    onError: (error) => {
+      toast.error(error.message);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
       resetForm();
