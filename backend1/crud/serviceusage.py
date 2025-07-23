@@ -31,17 +31,18 @@ def update_serviceusage(db: Session, serviceusage_id: int, serviceusage: Service
     db_serviceusage.Quantity = serviceusage.Quantity
     db_serviceusage.UsageMonth = serviceusage.UsageMonth
     db_serviceusage.UsageYear = serviceusage.UsageYear
-    
-    # Find related invoices and update their amounts
-    related_invoices = db.query(Invoice).filter(Invoice.ServiceUsageID == serviceusage_id).all()
-    
-    # Commit service usage change first
-    db.flush()
-    
-    # Update related invoice amounts
-    for invoice in related_invoices:
-        recalculate_invoice_amount(db, invoice.InvoiceID)
-    
+    db_serviceusage.InvoiceID = serviceusage.InvoiceID
+
+    # Lấy InvoiceID liên quan
+    invoice_id = db_serviceusage.InvoiceID
+
+    db.flush()  # Đảm bảo thay đổi đã được ghi vào session
+
+    # Nếu có InvoiceID thì cập nhật lại tổng tiền hóa đơn
+    if invoice_id:
+        from utils.invoice_triggers import recalculate_invoice_amount
+        recalculate_invoice_amount(db, invoice_id)
+
     db.commit()
     db.refresh(db_serviceusage)
     return db_serviceusage
